@@ -55,6 +55,7 @@ class XHR {
 	_sendPost() : void {
 		// open url
 		this._xhr.open('Post', this._url, true);
+		this._xhr.onreadystatechange = XHR._stateChangeHandler(this);
 
 		var paramString = XHR._createParamsString(this._params);
 

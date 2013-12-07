@@ -98,7 +98,7 @@ class RoundRockGradeRetriever implements GradeRetriever {
 
 class AustinGradeRetriever implements GradeRetriever {
 	static LOGIN_URL = 'https://gradespeed.austinisd.org/pc/default.aspx?DistrictID=227901';
-	static DISAMBIGUATE_URL = 'https://gradespeed.austinisd.org/pc/ParentStudentGrades.aspx';
+	static DISAMBIGUATE_URL = 'https://gradespeed.austinisd.org/pc/ParentMain.aspx';
 	static GRADES_URL = 'https://gradespeed.austinisd.org/pc/ParentStudentGrades.aspx';
 
 	login(uname : string, pass : string, studentID : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
