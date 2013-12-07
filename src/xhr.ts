@@ -2,64 +2,68 @@
 
 /** A helper class for making XMLHttpRequests. */
 class XHR {
-	xhr : XMLHttpRequest;
-	method : string;
-	url : string;
-	params : Object;
-	success : Function;
-	fail : Function;
+	_xhr : XMLHttpRequest;
+	_method : string;
+	_url : string;
+	_params : Object;
+	_success : Function;
+	_fail : Function;
 
 	/** Calls 'f' with arguments if it is a function, otherwise does nothing. */
-	_maybeCall(f : any, _this : any, args : any[]) : any {
+	static _maybeCall(f : any, _this : any, args : any[]) : any {
 		if (typeof f === 'function')
 			return f.apply(_this, args);
 	}
 
 	/** Encodes a parameter from a key/value pair. */
-	_encodeParameter(key : string, value : any) : string {
-		return key + '=' + encodeURIComponent(value);
+	static _encodeParameter(key : string, value : any) : string {
+		// null -> empty string
+		if (value === null) value = '';
+
+		// encode
+		return encodeURIComponent(key) + '=' + encodeURIComponent(value);
 	}
 
 	/** Handles state changes in the backing XHR */
-	_stateChangeHandler(_this : XHR) : () => void {
+	static _stateChangeHandler(_this : XHR) : () => void {
 		return function () {
-			if (_this.xhr.readyState === 4) {
-				if (_this.xhr.status === 200) {
-					_this._maybeCall(_this.success, _this.xhr, [_this.xhr.responseText, _this.xhr.responseXML]);
+			if (_this._xhr.readyState === 4) {
+				if (_this._xhr.status === 200) {
+					XHR._maybeCall(_this._success, _this._xhr, [_this._xhr.responseText, _this._xhr.responseXML]);
 				} else {
-					_this._maybeCall(_this.fail, _this.xhr, [null]);
+					XHR._maybeCall(_this._fail, _this._xhr, [null]);
 				}
 			}
 		}
 	}
 
 	/** Cretaes a parameter string from a hash of parameters. */
-	_createParamsString(params : Object) : string {
+	static _createParamsString(params : Object) : string {
 		if (typeof params === 'undefined') return '';
-		return params.mapOwnProperties(this._encodeParameter).join('&');
+		return params.mapOwnProperties(XHR._encodeParameter).join('&');
 	}
 
 	/** Sends a GET request with the specified parameters. */
-	_sendGet() {
-		this.xhr.open('GET', this.url + '?' + this._createParamsString(this.params), true);
-		this.xhr.onreadystatechange = this._stateChangeHandler(this);
-		this.xhr.send(null);
+	_sendGet() : void {
+		this._xhr.open('GET', this._url + '?' + XHR._createParamsString(this._params), true);
+		this._xhr.onreadystatechange = XHR._stateChangeHandler(this);
+		this._xhr.send(null);
 	}
 
 	/** Sends a POST request with the specified parameters. */
-	_sendPost() {
+	_sendPost() : void {
 		// open url
-		this.xhr.open('Post', this.url, true);
+		this._xhr.open('Post', this._url, true);
 
-		var paramString = this._createParamsString(this.params);
+		var paramString = XHR._createParamsString(this._params);
 
 		// send the proper header information along with the request
-		this.xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		this.xhr.setRequestHeader("Content-length", paramString.length.toString());
-		this.xhr.setRequestHeader("Connection", "close");
+		this._xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		this._xhr.setRequestHeader("Content-length", paramString.length.toString());
+		this._xhr.setRequestHeader("Connection", "close");
 
 		// send params
-		this.xhr.send(paramString);
+		this._xhr.send(paramString);
 	}
 
 	/** Creates a new XHR and returns itself for chaining */
@@ -67,34 +71,34 @@ class XHR {
 		if (method !== 'GET' && method !== 'POST')
 			throw new Error('Unsupported HTTP request type: ' + method);
 
-		this.xhr = new XMLHttpRequest();
-		this.method = method;
-		this.url = url;
+		this._xhr = new XMLHttpRequest();
+		this._method = method;
+		this._url = url;
 		return this;
 	}
 
 	/** Sets the callback for when the request succeeds. */
-	onSuccess(f : Function) : XHR {
-		this.success = f;
+	success(f : Function) : XHR {
+		this._success = f;
 		return this;
 	}
 
 	/** Sets the callback for when the request fails. */
-	onFail(f : (ev : ErrorEvent) => any) : XHR {
-		this.fail = f;
-		this.xhr.onerror = f;
+	fail(f : (ev : ErrorEvent) => any) : XHR {
+		this._fail = f;
+		this._xhr.onerror = f;
 		return this;
 	}
 
 	/** Sets the parameters to be passed to the server. */
-	setParams(params : Object) : XHR {
-		this.params = params;
+	params(params : Object) : XHR {
+		this._params = params;
 		return this;
 	}
 
 	/** Sends an XHR */
 	send() : void {
-		if (this.method === 'GET')
+		if (this._method === 'GET')
 			this._sendGet();
 		else
 			this._sendPost();
