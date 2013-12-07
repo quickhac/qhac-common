@@ -3,8 +3,8 @@
 
 interface GradeRetriever {
 	login(uname : string, pass : string, studentID : string, success : Function, fail : (ev : ErrorEvent) => any) : void;
-	retrieveAverages(success : Function, fail : (ev : ErrorEvent) => any) : void;
-	retrieveClassGrades(urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void;
+	getAverages(success : Function, fail : (ev : ErrorEvent) => any) : void;
+	getClassGrades(urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void;
 }
 
 class RoundRockGradeRetriever implements GradeRetriever {
@@ -43,7 +43,7 @@ class RoundRockGradeRetriever implements GradeRetriever {
 			};
 
 			// send login request
-			new XHR('GET', RoundRockGradeRetriever.LOGIN_URL)
+			new XHR('POST', RoundRockGradeRetriever.LOGIN_URL)
 				.success(select_student)
 				.fail(fail)
 				.params(query)
@@ -61,7 +61,7 @@ class RoundRockGradeRetriever implements GradeRetriever {
 	}
 
 	/** Retrieve grades directly from gradebook with the unique ID hash. */
-	retrieveAveragesDirectly(idHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
+	getAveragesDirectly(idHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
 		new XHR('GET', RoundRockGradeRetriever.DIRECT_GRADES_URL)
 			.success(success)
 			.fail(fail)
@@ -70,7 +70,7 @@ class RoundRockGradeRetriever implements GradeRetriever {
 	}
 
 	/** Retrieves grades frome Home Access once logged in. */
-	retrieveAverages(success : Function, fail : (ev : ErrorEvent) => any) : void {
+	getAverages(success : Function, fail : (ev : ErrorEvent) => any) : void {
 		new XHR('GET', RoundRockGradeRetriever.GRADES_URL)
 			.success(success)
 			.fail(fail)
@@ -78,7 +78,7 @@ class RoundRockGradeRetriever implements GradeRetriever {
 	}
 
 	/** Retrieve class grades directly from gradebook. */
-	retrieveClassGradesDirectly(idHash : string, urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
+	getClassGradesDirectly(idHash : string, urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
 		new XHR('GET', RoundRockGradeRetriever.DIRECT_GRADES_URL)
 			.success(success)
 			.fail(fail)
@@ -87,7 +87,7 @@ class RoundRockGradeRetriever implements GradeRetriever {
 	}
 
 	/** Retrieve class grades once logged in. */
-	retrieveClassGrades(urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
+	getClassGrades(urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
 		new XHR('GET', RoundRockGradeRetriever.GRADES_URL)
 			.success(success)
 			.fail(fail)
@@ -132,9 +132,10 @@ class AustinGradeRetriever implements GradeRetriever {
 			};
 
 			// send login request
-			new XHR('GET', AustinGradeRetriever.LOGIN_URL)
+			new XHR('POST', AustinGradeRetriever.LOGIN_URL)
 				.success(select_student)
 				.fail(fail)
+				.params(query)
 				.send();
 		}
 
@@ -167,7 +168,7 @@ class AustinGradeRetriever implements GradeRetriever {
 				};
 
 				// send request
-				new XHR('GET', AustinGradeRetriever.DISAMBIGUATE_URL)
+				new XHR('POST', AustinGradeRetriever.DISAMBIGUATE_URL)
 					.success(success)
 					.fail(fail)
 					.send();
@@ -178,14 +179,14 @@ class AustinGradeRetriever implements GradeRetriever {
 		}
 	}
 
-	retrieveAverages(success : Function, fail : (ev : ErrorEvent) => any) : void {
+	getAverages(success : Function, fail : (ev : ErrorEvent) => any) : void {
 		new XHR('GET', AustinGradeRetriever.GRADES_URL)
 			.success(success)
 			.fail(fail)
 			.send();
 	}
 
-	retrieveClassGrades(urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
+	getClassGrades(urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
 		new XHR('GET', AustinGradeRetriever.GRADES_URL)
 			success(success)
 			.fail(fail)

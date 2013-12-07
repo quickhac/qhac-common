@@ -30,8 +30,6 @@ class XHR {
 			if (_this._xhr.readyState === 4) {
 				if (_this._xhr.status === 200) {
 					XHR._maybeCall(_this._success, _this._xhr, [_this._xhr.responseText, _this._xhr.responseXML]);
-				} else {
-					XHR._maybeCall(_this._fail, _this._xhr, [null]);
 				}
 			}
 		}
@@ -45,7 +43,10 @@ class XHR {
 
 	/** Sends a GET request with the specified parameters. */
 	_sendGet() : void {
-		this._xhr.open('GET', this._url + '?' + XHR._createParamsString(this._params), true);
+		// only add ? if params exist
+		var params = XHR._createParamsString(this._params);
+		if (params !== '') params = '?' + params;
+		this._xhr.open('GET', this._url + params, true);
 		this._xhr.onreadystatechange = XHR._stateChangeHandler(this);
 		this._xhr.send(null);
 	}
@@ -59,8 +60,6 @@ class XHR {
 
 		// send the proper header information along with the request
 		this._xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		this._xhr.setRequestHeader("Content-length", paramString.length.toString());
-		this._xhr.setRequestHeader("Connection", "close");
 
 		// send params
 		this._xhr.send(paramString);
@@ -85,8 +84,9 @@ class XHR {
 
 	/** Sets the callback for when the request fails. */
 	fail(f : (ev : ErrorEvent) => any) : XHR {
-		this._fail = f;
-		this._xhr.onerror = f;
+		this._xhr.onerror = function (ev : ErrorEvent) {
+			return XHR._maybeCall(f, this, [ev]);
+		}
 		return this;
 	}
 
