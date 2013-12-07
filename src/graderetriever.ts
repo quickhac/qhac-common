@@ -171,6 +171,7 @@ class AustinGradeRetriever implements GradeRetriever {
 				new XHR('POST', AustinGradeRetriever.DISAMBIGUATE_URL)
 					.success(success)
 					.fail(fail)
+					.params(query)
 					.send();
 			} else {
 				// no student selection required; call the success callback
