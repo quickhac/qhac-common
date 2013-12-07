@@ -46,7 +46,7 @@ interface Object {
 /** Iterates through all properties that belong to an object. */
 Object.prototype.eachOwnProperty = function(f : (k : string, v : any) => any) {
 	for (var k in this)
-		if (this.hasOwnProperty(k))
+		if (Object.prototype.hasOwnProperty.call(this, k))
 			f(k, this[k]);
 }
 
@@ -55,7 +55,7 @@ Object.prototype.mapOwnProperties = function(f : (k : string, v : any) => any) {
 	var newList = [];
 
 	for (var k in this)
-		if (this.hasOwnProperty(k))
+		if (Object.prototype.hasOwnProperty.call(this, k))
 			newList[newList.length] = f(k, this[k]);
 
 	return newList;
