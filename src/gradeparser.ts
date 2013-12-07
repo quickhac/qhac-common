@@ -5,7 +5,7 @@
 module GradeParser {
 	var EXTRA_CREDIT_REGEX = /^extra credit$|^ec$/i;
 	var EXTRA_CREDIT_NOTE_REGEX = /extra credit/i;
-	var GRADE_CELL_URL_REGEX = /\?data=([\w\d%]*)"/g;
+	var GRADE_CELL_URL_REGEX = /\?data=([\w\d%]*)/;
 
 	/** column offset for finding parts of grade tables */
 	var COL_OFFSET = {
@@ -43,17 +43,19 @@ module GradeParser {
 	/** Takes a grade cell and returns a number; NaN if empty */
 	function parseGradeCell(cell : HTMLElement) : number {
 		var gradeText = cell.innerHTML;
+		console.log(gradeText);
 		if (gradeText === '') return NaN;
 		if (gradeText === "&nbsp;") return NaN;
-		return parseInt(gradeText);
+		return parseInt(cell.children[0].innerHTML);
 	}
 
 	/** Gets all course information from a course */
-	function parseCourse(row : HTMLElement, district : string) : Course {
+	function parseCourse($row : HTMLElement, district : string) : Course {
 		// find the cells in this row
-		var $cells = row.findTag('td');
+		var $cells = $row.findTag('td');
 
-		// TODO: teacher and teacher email
+		// find the teacher name and email
+		var $teacherCell = $row.findClass('EmailLink')[0];
 
 		// find the cells with grades in nthem
 		var $gradeCells = $cells.splice(COL_OFFSET[district].GRADE);
@@ -70,8 +72,8 @@ module GradeParser {
 		// finally, create the object to return
 		var course : Course = {
 			title: $cells[COL_OFFSET[district].TITLE].innerText,
-			teacher: null,
-			teacherEmail: null,
+			teacher: $teacherCell.innerText,
+			teacherEmail: $teacherCell.attr('href').substr(7),
 			sixWeeksAverages: sixWeeks.map((x) => x.grade),
 			sixWeeksUrlHashes: sixWeeks.map((x) => x.url),
 			examGrades: $examCells.map(parseGradeCell),
@@ -84,16 +86,16 @@ module GradeParser {
 	/** Gets information for all courses */
 	export function parseAverages(doc : string, district: string) : Course[] {
 		// set up DOM for parsing
-		var dom = document.createElement('div');
-		dom.innerHTML = doc;
+		var $dom = document.createElement('div');
+		$dom.innerHTML = doc;
 
 		// find the grade table
-		var gradeTable = dom.find('.DataTable:first');
+		var $gradeTable = $dom.find('.DataTable')[0];
 
 		// find each course
-		var rows = gradeTable.find('tr.DataRow, tr.DataRowAlt');
+		var $rows = $gradeTable.find('tr.DataRow, tr.DataRowAlt');
 
 		// parse each course
-		return rows.map((r) => parseCourse(r, district));
+		return $rows.map((r : HTMLElement) => parseCourse(r, district));
 	}
 }

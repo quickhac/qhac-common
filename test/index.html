@@ -1,7 +1,72 @@
 <!doctype html>
-<script src="../build/data.js"></script>
-<script src="../build/qmath.js"></script>
-<script src="../build/query.js"></script>
-<script src="../build/gpa.js"></script>
-<script src="../build/gradeparser.js"></script>
-<script src="../build/graderetriever.js"></script>
+<head>
+	<title>QuickHAC Common Libraries Test</title>
+	<script src="../build/data.js"></script>
+	<script src="../build/qmath.js"></script>
+	<script src="../build/query.js"></script>
+	<script src="../build/xhr.js"></script>
+	<script src="../build/gpa.js"></script>
+	<script src="../build/gradeparser.js"></script>
+	<script src="../build/graderetriever.js"></script>
+</head>
+<body>
+	
+   <form name="aspnetForm" method="post" action="ParentStudentGrades.aspx" id="aspnetForm">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKLTkwNTg4MzgyMg9kFgJmD2QWBAIBD2QWAgIDDxYCHgRUZXh0BUk8bGluayBocmVmPSJTdHlsZVNoZWV0cy9QQ01hc3Rlci5jc3MiIHR5cGU9InRleHQvY3NzIiByZWw9InN0eWxlc2hlZXQiIC8+ZAIDD2QWAgIBD2QWBgIBDxYCHgdWaXNpYmxlaBYCZg8WBB4HY29sc3BhbgUBMR4JaW5uZXJodG1sBRcmbmJzcDtTdHVkZW50Q29ubmVjdGlvbmQCAw8WAh8BaBYQAgMPFgIfAAUOUm91bmQgUm9jayBJU0RkAgUPFgIfAAUaPGJyIC8+V2VzdHdvb2QgSGlnaCBTY2hvb2xkAgkPEA8WAh8BaGQQFQEMWmVuZywgWHVtaW5nFQEGMjYyMDAxFCsDAWcWAWZkAgsPDxYCHwFoZGQCDQ8PFgIfAAUMWmVuZywgWHVtaW5nZGQCEQ8WAh8ABa0BICAgICAgICAgICAgICAgPHVsIGNsYXNzPSJOYXZCYXJMaW5rcyI+DQogICAgICAgICAgICAgICAgICA8bGkgaWQ9Imxua0dyYWRlc0J1bGxldCI+PGEgaHJlZj0iUGFyZW50U3R1ZGVudEdyYWRlcy5hc3B4IiBpZD0ibG5rR3JhZGVzIj5HcmFkZXM8L2E+PC9saT4NCiAgICAgICAgICAgICAgIDwvdWw+DQpkAhUPDxYCHwAFBjI2MjAwMWRkAhkPFgIfAGVkAgUPFgQeBWFsaWduBQRsZWZ0HgVjbGFzcwUPTWFpbkNvbnRlbnRMZWZ0FgICAQ9kFgICAw8WAh8AZWRkNXbdFQL317PRwJsE546OhH28l0Q=" />
+
+<script language="Javascript">
+window.onscroll = function(){
+   saveScrollParameters();}
+
+function saveScrollParameters(){
+   getScrollDocumentElement('__scrollLeft').value = document.body.scrollLeft + '';
+   getScrollDocumentElement('__scrollTop').value = document.body.scrollTop + '';
+   window.status = 'scroll ' + document.body.scrollLeft + ', ' + document.body.scrollTop;}
+
+function getScrollDocumentElement(elementID){
+   if (document.getElementById){
+      return document.getElementById(elementID);
+   }else{
+      if (document.all){
+         return document.all(elementID);
+      }else{
+         if (document.layers){
+            return document.layers(elementID);
+         }
+      }
+   }
+}
+</script><input type="hidden" name="__scrollLeft" id="__scrollLeft" value="0"><input type="hidden" name="__scrollTop" id="__scrollTop" value="0">
+      <input type="hidden" name="__RUNEVENTTARGET" />
+      <input type="hidden" name="__RUNEVENTARGUMENT" />
+      <input type="hidden" name="__RUNEVENTARGUMENT2" />
+      <table border="0" cellspacing="0" cellpadding="0" class="MainTable">
+        <tr class="Banner">
+            <td colspan="2"></td>
+        </tr>
+         
+         <tr>
+            
+            <td id="_ctl0_tdMainContent" align="left" class="MainContentLeft">
+               
+   <span class="PageHeader">Student Grades</span>
+   <p class="PageNote"></p>
+   <P><div class="StudentHeader"><span class="StudentName">Zeng, Xuming</span> (Westwood High School)</div><table border="0" cellspacing="0" cellpadding="3" class="DataTable"><tr class="TableHeader"><th align="left" scope="col">Teacher</th><th align="left" scope="col">Course</th><th align="left" scope="col">Period</th><th align="left" scope="col">Cycle 1</th><th align="left" scope="col">Cycle 2</th><th align="left" scope="col">Cycle 3</th><th align="left" scope="col">Exam 1</th><th align="left" scope="col">Sem 1</th><th align="left" scope="col">Cycle 4</th><th align="left" scope="col">Cycle 5</th><th align="left" scope="col">Cycle 6</th><th align="left" scope="col">Exam 2</th><th align="left" scope="col">Sem 2</th></tr><tr class="DataRow">
+<th align="left" scope="row" class="TeacherNameCell"><a href="mailto:Jeffrey_Mickel@roundrockisd.org" class="EmailLink">Mickel, Jeffrey</a></th><td align="left">IB Comp Sci II HL</td><td>01</td><td><a href="?data=MXwyNjIwMDF8MTEzMzk2fDM5MzNBfDR8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Mickel, Jeffrey Course IB Comp Sci II HL Period 01 Cycle 1 Grade 100">100</a></td><td><a href="?data=MnwyNjIwMDF8MTEzMzk2fDM5MzNBfDR8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Mickel, Jeffrey Course IB Comp Sci II HL Period 01 Cycle 2 Grade 100">100</a></td><td>&nbsp;</td><td>&nbsp;</td><td><span class="Grade" title="Teacher Mickel, Jeffrey Course IB Comp Sci II HL Period 01 Semester 1 Grade 100">100</span></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr class="DataRowAlt">
+<th align="left" scope="row" class="TeacherNameCell"><a href="mailto:SusanK_Williams@roundrockisd.org" class="EmailLink">Williams, Susan</a></th><td align="left">Philharmon Orch</td><td>02</td><td><a href="?data=MXwyNjIwMDF8MTA4MDQwfDcyNTlBfDF8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Williams, Susan Course Philharmon Orch Period 02 Cycle 1 Grade 100">100</a></td><td><a href="?data=MnwyNjIwMDF8MTA4MDQwfDcyNTlBfDF8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Williams, Susan Course Philharmon Orch Period 02 Cycle 2 Grade 100">100</a></td><td><a href="?data=M3wyNjIwMDF8MTA4MDQwfDcyNTlBfDF8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Williams, Susan Course Philharmon Orch Period 02 Cycle 3 Grade 100">100</a></td><td>&nbsp;</td><td><span class="Grade" title="Teacher Williams, Susan Course Philharmon Orch Period 02 Semester 1 Grade 100">100</span></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr class="DataRow">
+<th align="left" scope="row" class="TeacherNameCell"><a href="mailto:Kelly_Saenz@roundrockisd.org" class="EmailLink">Saenz, Kelly</a></th><td align="left">IB Euro Hist II</td><td>03</td><td><a href="?data=MXwyNjIwMDF8MTE1NDY1fDI2MTBBfDF8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Saenz, Kelly Course IB Euro Hist II Period 03 Cycle 1 Grade 93">93</a></td><td><a href="?data=MnwyNjIwMDF8MTE1NDY1fDI2MTBBfDF8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Saenz, Kelly Course IB Euro Hist II Period 03 Cycle 2 Grade 90">90</a></td><td><a href="?data=M3wyNjIwMDF8MTE1NDY1fDI2MTBBfDF8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Saenz, Kelly Course IB Euro Hist II Period 03 Cycle 3 Grade 87">87</a></td><td>&nbsp;</td><td><span class="Grade" title="Teacher Saenz, Kelly Course IB Euro Hist II Period 03 Semester 1 Grade 90">90</span></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr class="DataRowAlt">
+<th align="left" scope="row" class="TeacherNameCell"><a href="mailto:Kimberly_Smith@roundrockisd.org" class="EmailLink">Smith, Kimberly</a></th><td align="left">IB Tag Eng IV</td><td>05</td><td><a href="?data=MXwyNjIwMDF8MTI5NzQxfDExNDdBfDR8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Smith, Kimberly Course IB Tag Eng IV Period 05 Cycle 1 Grade 95">95</a></td><td><a href="?data=MnwyNjIwMDF8MTI5NzQxfDExNDdBfDR8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Smith, Kimberly Course IB Tag Eng IV Period 05 Cycle 2 Grade 92">92</a></td><td><a href="?data=M3wyNjIwMDF8MTI5NzQxfDExNDdBfDR8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Smith, Kimberly Course IB Tag Eng IV Period 05 Cycle 3 Grade 100">100</a></td><td>&nbsp;</td><td><span class="Grade" title="Teacher Smith, Kimberly Course IB Tag Eng IV Period 05 Semester 1 Grade 96">96</span></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr class="DataRow">
+<th align="left" scope="row" class="TeacherNameCell"><a href="mailto:Michael_Quatro@roundrockisd.org" class="EmailLink">Quatro, Michael</a></th><td align="left">IB Theo/Know - F</td><td>06</td><td><a href="?data=MXwyNjIwMDF8MTMxOTg1fDI2MTZ8NHwyNDY5MDl8Mw%3d%3d" class="Grade"  title="Teacher Quatro, Michael Course IB Theo/Know - F Period 06 Cycle 1 Grade 100">100</a></td><td><a href="?data=MnwyNjIwMDF8MTMxOTg1fDI2MTZ8NHwyNDY5MDl8Mw%3d%3d" class="Grade"  title="Teacher Quatro, Michael Course IB Theo/Know - F Period 06 Cycle 2 Grade 94">94</a></td><td><a href="?data=M3wyNjIwMDF8MTMxOTg1fDI2MTZ8NHwyNDY5MDl8Mw%3d%3d" class="Grade"  title="Teacher Quatro, Michael Course IB Theo/Know - F Period 06 Cycle 3 Grade 100">100</a></td><td>&nbsp;</td><td><span class="Grade" title="Teacher Quatro, Michael Course IB Theo/Know - F Period 06 Semester 1 Grade 98">98</span></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr class="DataRowAlt">
+<th align="left" scope="row" class="TeacherNameCell"><a href="mailto:Leslie_Drake@roundrockisd.org" class="EmailLink">Drake, Leslie</a></th><td align="left">AP Physics C</td><td>07</td><td><a href="?data=MXwyNjIwMDF8MTMxODM1fDQzNDVBfDJ8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Drake, Leslie Course AP Physics C Period 07 Cycle 1 Grade 98">98</a></td><td><a href="?data=MnwyNjIwMDF8MTMxODM1fDQzNDVBfDJ8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Drake, Leslie Course AP Physics C Period 07 Cycle 2 Grade 91">91</a></td><td><a href="?data=M3wyNjIwMDF8MTMxODM1fDQzNDVBfDJ8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Drake, Leslie Course AP Physics C Period 07 Cycle 3 Grade 97">97</a></td><td>&nbsp;</td><td><span class="Grade" title="Teacher Drake, Leslie Course AP Physics C Period 07 Semester 1 Grade 95">95</span></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr class="DataRow">
+<th align="left" scope="row" class="TeacherNameCell"><a href="mailto:Meiling_Dang@roundrockisd.org" class="EmailLink">Dang, Meling</a></th><td align="left">IB Math HL</td><td>08</td><td><a href="?data=MXwyNjIwMDF8MTI4Mjk2fDM2MjZBfDJ8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Dang, Meling Course IB Math HL Period 08 Cycle 1 Grade 93">93</a></td><td><a href="?data=MnwyNjIwMDF8MTI4Mjk2fDM2MjZBfDJ8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Dang, Meling Course IB Math HL Period 08 Cycle 2 Grade 91">91</a></td><td><a href="?data=M3wyNjIwMDF8MTI4Mjk2fDM2MjZBfDJ8MjQ2OTA5fDM%3d" class="Grade"  title="Teacher Dang, Meling Course IB Math HL Period 08 Cycle 3 Grade 100">100</a></td><td>&nbsp;</td><td><span class="Grade" title="Teacher Dang, Meling Course IB Math HL Period 08 Semester 1 Grade 95">95</span></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></table>&nbsp;</P>
+   
+  
+            </td>
+
+         </tr>
+      </table>
+   
+<script language="javascript">
+   window.setTimeout('window.scroll(0,0);', 100);
+</script></form>
+</body>

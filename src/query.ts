@@ -1,10 +1,38 @@
 // Aliases for common DOM traversal functions
 
+// declare methods defined below
 interface HTMLElement {
 	find(x : string) : NodeList;
-	attr() : string;
+	attr(x : string) : string;
 	findClass(x : string) : NodeList;
 	findTag(x : string) : NodeList;
+}
+
+// Node inherits HTMLElement properties and methods; suppress TS warnings
+interface Node {
+	find(x : string) : NodeList;
+	attr(x : string) : string;
+	findClass(x : string) : NodeList;
+	findTag(x : string) : NodeList;
+	// innerText and innerHTML warning suppression
+	innerText : string;
+	innerHTML : string;
+}
+
+// same for Element
+interface Element {
+	find(x : string) : NodeList;
+	attr(x : string) : string;
+	findClass(x : string) : NodeList;
+	findTag(x : string) : NodeList;
+	// innerText and innerHTML warning suppression
+	innerText : string;
+	innerHTML : string;
+}
+
+interface NodeList {
+	map(f : (x : Node) => any) : any;
+	splice(idx : number) : Node[];
 }
 
 HTMLElement.prototype.find = HTMLElement.prototype.querySelectorAll;
@@ -15,11 +43,21 @@ HTMLElement.prototype.findClass = HTMLElement.prototype.getElementsByClassName;
 
 HTMLElement.prototype.findTag = HTMLElement.prototype.getElementsByTagName;
 
-NodeList.prototype.splice = (idx) => {
+NodeList.prototype.splice = function (idx : number) : Node[] {
 	var newList = [];
 
-	for (i = idx; i < this.length; i++) {
+	for (var i = idx; i < this.length; i++) {
 		newList[newList.length] = this[i];
+	}
+
+	return newList;
+}
+
+NodeList.prototype.map = function (f : (x : Node) => any) {
+	var newList = [];
+
+	for (var i = 0; i < this.length; i++) {
+		newList[i] = f(this[i]);
 	}
 
 	return newList;

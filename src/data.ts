@@ -1,3 +1,5 @@
+// Interfaces for dealing with different types of data
+
 interface Course {
 	title: string;
 	teacher: string;
@@ -33,4 +35,28 @@ interface Assignment {
 	weight: number;
 	note: string;
 	extraCredit: boolean;
+}
+
+// Helpful methods
+interface Object {
+	eachOwnProperty(f : (k : string, v : any) => any) : any;
+	mapOwnProperties(f : (k : string, v : any) => any) : any;
+}
+
+/** Iterates through all properties that belong to an object. */
+Object.prototype.eachOwnProperty = function(f : (k : string, v : any) => any) {
+	for (var k in this)
+		if (this.hasOwnProperty(k))
+			f(k, this[k]);
+}
+
+/** Map through all properties that belong to an object, returning an array.. */
+Object.prototype.mapOwnProperties = function(f : (k : string, v : any) => any) {
+	var newList = [];
+
+	for (var k in this)
+		if (this.hasOwnProperty(k))
+			newList[newList.length] = f(k, this[k]);
+
+	return newList;
 }
