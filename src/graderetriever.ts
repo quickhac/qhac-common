@@ -189,7 +189,7 @@ class AustinGradeRetriever implements GradeRetriever {
 
 	getClassGrades(urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
 		new XHR('GET', AustinGradeRetriever.GRADES_URL)
-			success(success)
+			.success(success)
 			.fail(fail)
 			.params({'data': urlHash})
 			.send();
