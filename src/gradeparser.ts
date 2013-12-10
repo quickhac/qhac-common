@@ -2,89 +2,95 @@
 /// <reference path='qmath.ts'/>
 /// <reference path='query.ts'/>
 
+
+// This is the GradeSpeed version. In the future, we will need to implement a
+// corresponding txConnect version.
 module GradeParser {
 	var EXTRA_CREDIT_REGEX = /^extra credit$|^ec$/i;
 	var EXTRA_CREDIT_NOTE_REGEX = /extra credit/i;
 	var GRADE_CELL_URL_REGEX = /\?data=([\w\d%]*)/;
 
-	/** column offset for finding parts of grade tables */
-	var COL_OFFSET = {
-		'ROUNDROCK': {
-			'TITLE': 0,
-			'GRADE': 2
-		},
-		'AUSTIN': {
-			'TITLE': 1,
-			'GRADE': 3
-		}
-	};
-
-	interface SixWeeks {
-		grade : number;
-		url : string;
-	}
-
-	/** Takes a six weeks cell and returns a grade and a URL hash. */
-	function parseSixWeeksCell(cell : HTMLElement) : SixWeeks {
+	function parseCycle(district : District, $cell : HTMLElement, idx : number) : Cycle {
 		// find a link, if any
-		var $link = cell.findTag('a');
+		var $link = $cell.findTag('a');
 
 		// if there is no link, the cell is empty; return empty values
-		if (!$link.length) return {grade: NaN, url: undefined}
+		if (!$link.length) return {index: idx, average: NaN, urlHash: undefined};
 
 		// find a grade
-		var grade = parseInt($link[0].innerText);
-		var url = GRADE_CELL_URL_REGEX.exec($link[0].attr('href'))[1];
+		var average = parseInt($link[0].innerText);
+		var urlHash = GRADE_CELL_URL_REGEX.exec($link[0].attr('href'))[1];
 
 		// return it
-		return {grade: grade, url: url};
+		return {
+			index: idx,
+			average: average,
+			urlHash: urlHash
+		}
 	}
 
-	/** Takes a grade cell and returns a number; NaN if empty */
-	function parseGradeCell(cell : HTMLElement) : number {
-		var gradeText = cell.innerHTML;
-		console.log(gradeText);
-		if (gradeText === '') return NaN;
-		if (gradeText === "&nbsp;") return NaN;
-		return parseInt(cell.children[0].innerHTML);
+	function parseSemester(district : District, $cells : HTMLElement[], idx : number) : Semester {
+		// parse cycles
+		var cycles : Cycle[] = [];
+		for (var i = 0; i < district.cyclesPerSemester; i++) {
+			cycles[i] = parseCycle(district, $cells[i], i);
+		}
+
+		// parse exam grade
+		var $exam = $cells[district.cyclesPerSemester];
+		var examGrade : number = NaN, examIsExempt : boolean = false;
+		if ($exam.innerHTML === '' || $exam.innerHTML === '&nbsp;') {}
+		else if ($exam.innerHTML === 'EX' || $exam.innerHTML === 'Exc')
+			examIsExempt = true;
+		else
+			examGrade = parseInt($exam.innerHTML);
+
+		// parse semester average
+		// TODO: calculate semester average instead of parsing it? because
+		// GradeSpeed sometimes messes up
+		var semesterAverage = parseInt($cells[district.cyclesPerSemester + 1].innerText);
+
+		// return a semester
+		return {
+			index: idx,
+			average: semesterAverage,
+			examGrade: examGrade,
+			examIsExempt: examIsExempt,
+			cycles: cycles
+		}
 	}
 
-	/** Gets all course information from a course */
-	function parseCourse($row : HTMLElement, district : string) : Course {
+	function parseCourse(district : District, $row : HTMLElement) : Course {
 		// find the cells in this row
 		var $cells = $row.findTag('td');
 
 		// find the teacher name and email
 		var $teacherCell = $row.findClass('EmailLink')[0];
 
-		// find the cells with grades in nthem
-		var $gradeCells = $cells.splice(COL_OFFSET[district].GRADE);
-		var $sixWeekCells = [
-			$gradeCells[0], $gradeCells[1], $gradeCells[2],
-			$gradeCells[5], $gradeCells[6], $gradeCells[7]
-		];
-		var $examCells = [$gradeCells[3], $gradeCells[8]];
-		var $semesterCells = [$gradeCells[4], $gradeCells[9]];
+		// TODO: get the course ID
 
-		// parse six weeeks cells
-		var sixWeeks = $sixWeekCells.map(parseSixWeeksCell);
-
-		// finally, create the object to return
-		var course : Course = {
-			title: $cells[COL_OFFSET[district].TITLE].innerText,
-			teacher: $teacherCell.innerText,
-			teacherEmail: $teacherCell.attr('href').substr(7),
-			sixWeeksAverages: sixWeeks.map((x) => x.grade),
-			sixWeeksUrlHashes: sixWeeks.map((x) => x.url),
-			examGrades: $examCells.map(parseGradeCell),
-			semesterAverages: $semesterCells.map(parseGradeCell)
+		// parse semesters
+		var semesters : Semester[] = [];
+		for (var i = 0; i < district.semesters; i++) {
+			// get cells for the semester
+			var $semesterCells = [];
+			for (var j = 0; j < district.cyclesPerSemester + 2; j++)
+				$semesterCells[j] = $cells[district.columnOffsets.grades + j];
+			// parse the semester
+			semesters[i] = parseSemester(district, $semesterCells, i);
 		}
 
-		return course;
+		return {
+			title: $cells[district.columnOffsets.title].innerText,
+			teacherName: $teacherCell.innerText,
+			teacherEmail: $teacherCell.attr('href').substr(7),
+			courseId: null, // TODO
+			semesters: semesters
+		}
 	}
 
 	/** Gets information for all courses */
-	export function parseAverages(doc : string, district: string) : Course[] {
+	export function parseAverages(district : District, doc : string) : Course[] {
 		// set up DOM for parsing
 		var $dom = document.createElement('div');
 		$dom.innerHTML = doc;
@@ -96,6 +102,6 @@ module GradeParser {
 		var $rows = $gradeTable.find('tr.DataRow, tr.DataRowAlt');
 
 		// parse each course
-		return $rows.map((r : HTMLElement) => parseCourse(r, district));
+		return $rows.map((r : HTMLElement) => parseCourse(district, r));
 	}
 }

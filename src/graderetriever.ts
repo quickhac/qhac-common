@@ -1,202 +1,119 @@
 /// <reference path='data.ts'/>
 /// <reference path='xhr.ts'/>
 
-interface GradeRetriever {
-	login(uname : string, pass : string, studentID : string, success : Function, fail : (ev : ErrorEvent) => any) : void;
-	getAverages(success : Function, fail : (ev : ErrorEvent) => any) : void;
-	getClassGrades(urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void;
-}
+module GradeRetriever {
 
-class RoundRockGradeRetriever implements GradeRetriever {
-	static LOGIN_URL = 'https://accesscenter.roundrockisd.org/homeaccess/default.aspx';
-	static DISAMBIGUATE_URL = 'https://accesscenter.roundrockisd.org/homeaccess/Student/DailySummary.aspx';
-	static DIRECT_GRADES_URL = 'https://gradebook.roundrockisd.org/pc/displaygrades.aspx';
-	static GRADES_URL = 'https://accesscenter.roundrockisd.org/homeaccess/Student/Gradespeed.aspx?target=https://gradebook.roundrockisd.org/pc/displaygrades.aspx';
+	// get the viewstate and eventvalidation on a page on GradeSpeed
+	function getPageState($dom : HTMLElement) : ASPNETPageState {
+		// gets the value of an element on the page
+		function getAttr(id : string) {
+			var $elem = $dom.find(id);
+			if ($elem.length) return $elem[0].attr('value');
+			else return null;
+		}
 
-	/** Log into Round Rock ISD Home Access Center. */
-	login(uname : string, pass : string, studentID : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
+		// return values parsed from the page
+		return {
+			viewstate: getAttr('#__VIEWSTATE'),
+			eventvalidation: getAttr('#__EVENTVALIDATION'),
+			eventtarget: getAttr('#__EVENTTARGET'),
+			eventargument: getAttr('#__EVENTARGUMENT')
+		}
+	}
+
+	/**
+	 * Logs into the GradeSpeed server of a district with specific login
+	 * information and callbacks.
+	 */
+	export function login(district : District, uname : string, pass : string,
+		studentID : string, success : Function, fail : (ev : ErrorEvent) => any)
+		: void {
 		// get the login page
-		new XHR('GET', RoundRockGradeRetriever.LOGIN_URL)
+		new XHR('GET', district.api.login.url)
 			.success(do_login)
 			.fail(fail)
 			.send();
 
 		// process the login page
 		function do_login(doc : string) {
+			// load the page DOM
 			var $dom = document.createElement('div');
 			$dom.innerHTML = doc;
 
-			// required elements for login
-			var viewstate = $dom.find('#__VIEWSTATE')[0].attr('value');
-			var eventvalidation = $dom.find('#__EVENTVALIDATION')[0].attr('value');
-			
-			// prepare parameters
-			var query = {
-				'__VIEWSTATE': viewstate,
-				'__EVENTVALIDATION': eventvalidation,
-				'ctl00$plnMain$txtLogin': uname,
-				'ctl00$plnMain$txtPassword': pass,
-				'__EVENTTARGET': null,
-				'__EVENTARGUMENT': null,
-				'ctl00$strHiddenPageTitle': null,
-				'ctl00$plnMain$Submit1': 'Log In'
-			};
+			// load the page state
+			var state = getPageState($dom);
 
-			// send login request
-			new XHR('POST', RoundRockGradeRetriever.LOGIN_URL)
-				.success(select_student)
+			// construct a query
+			var query = district.api.login.makeQuery(
+				uname, pass, state);
+
+			// perform login
+			new XHR('POST', district.api.login.url)
+				.success(disambiguate)
 				.fail(fail)
 				.params(query)
 				.send();
 		}
 
-		// select a student on the account
-		function select_student(doc : string) {
-			new XHR('GET', RoundRockGradeRetriever.DISAMBIGUATE_URL)
-				.success(success) // original success callback
-				.fail(fail)
-				.params({'student_id' : studentID})
-				.send();
-		}
-	}
-
-	/** Retrieve grades directly from gradebook with the unique ID hash. */
-	getAveragesDirectly(idHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
-		new XHR('GET', RoundRockGradeRetriever.DIRECT_GRADES_URL)
-			.success(success)
-			.fail(fail)
-			.params({'studentid' : idHash})
-			.send();
-	}
-
-	/** Retrieves grades frome Home Access once logged in. */
-	getAverages(success : Function, fail : (ev : ErrorEvent) => any) : void {
-		new XHR('GET', RoundRockGradeRetriever.GRADES_URL)
-			.success(success)
-			.fail(fail)
-			.send();
-	}
-
-	/** Retrieve class grades directly from gradebook. */
-	getClassGradesDirectly(idHash : string, urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
-		new XHR('GET', RoundRockGradeRetriever.DIRECT_GRADES_URL)
-			.success(success)
-			.fail(fail)
-			.params({'studentid' : idHash, 'data' : urlHash})
-			.send();
-	}
-
-	/** Retrieve class grades once logged in. */
-	getClassGrades(urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
-		new XHR('GET', RoundRockGradeRetriever.GRADES_URL)
-			.success(success)
-			.fail(fail)
-			.params({'data' : urlHash})
-			.send();
-	}
-}
-
-class AustinGradeRetriever implements GradeRetriever {
-	static LOGIN_URL = 'https://gradespeed.austinisd.org/pc/default.aspx?DistrictID=227901';
-	static DISAMBIGUATE_URL = 'https://gradespeed.austinisd.org/pc/ParentMain.aspx';
-	static GRADES_URL = 'https://gradespeed.austinisd.org/pc/ParentStudentGrades.aspx';
-
-	login(uname : string, pass : string, studentID : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
-		// get login page
-		new XHR('GET', AustinGradeRetriever.LOGIN_URL)
-			.success(do_login)
-			.fail(fail)
-			.send();
-
-		// process login page
-		function do_login(doc : string) {
+		// select a student
+		function disambiguate(doc : string) {
+			// load the page DOM
 			var $dom = document.createElement('div');
 			$dom.innerHTML = doc;
 
-			// required elements for login
-			var viewstate = $dom.find('#__VIEWSTATE')[0].attr('value');
+			// only disambiguate if necessary
+			if (district.api.disambiguate.isRequired($dom)) {
+				// load the page state
+				var state = getPageState($dom);
 
-			// prepare parameters
-			var query = {
-				"__EVENTTARGET": null,
-				"__EVENTARGUMENT": null,
-				"__LASTFOCUS": null,
-				"__VIEWSTATE": viewstate,
-				"__scrollLeft": 0,
-				"__scrollTop": 0,
-				"ddlDistricts": null,
-				"txtUserName": uname,
-				"txtPassword": pass,
-				"ddlLanguage": "en",
-				"btnLogOn": "Log On"
-			};
+				// construct a query
+				var query = district.api.disambiguate.makeQuery(
+					studentID, state);
 
-			// send login request
-			new XHR('POST', AustinGradeRetriever.LOGIN_URL)
-				.success(select_student)
-				.fail(fail)
-				.params(query)
-				.send();
-		}
-
-		// select a student if necessary
-		function select_student(doc : string) {
-			var $dom = document.createElement('div');
-			$dom.innerHTML = doc;
-
-			// check if the select box is on the page; if so, we need to select the student
-			// from a list of students.
-			var $selectBox = $dom.find('#_ctl0_ddlStudents');
-			if ($selectBox.length) {
-				// required elements >.>
-				var viewstate = $dom.find('#__VIEWSTATE')[0].attr('value');
-				var eventvalidation = $dom.find('#__EVENTVALIDATION')[0].attr('value');
-
-				// prepare parameters
-				var query = {
-					'__EVENTTARGET': '_ctl0$ddlStudents',
-					'__EVENTARGUMENT': null,
-					'__LASTFOCUS': null,
-					'__VIEWSTATE': viewstate,
-					'__scrollLeft': 0,
-					'__scrollTop': 0,
-					'__EVENTVALIDATION': eventvalidation,
-					'__RUNEVENTTARGET': null,
-					'__RUNEVENTARGUMENT': null,
-					'__RUNEVENTARGUMENT2': null,
-					'_ctl0:ddlStudents': studentID
-				};
-
-				// send request
-				new XHR('POST', AustinGradeRetriever.DISAMBIGUATE_URL)
+				// pass query to GradeSpeed
+				new XHR(district.api.disambiguate.method, district.api.disambiguate.url)
 					.success(success)
 					.fail(fail)
 					.params(query)
 					.send();
 			} else {
-				// no student selection required; call the success callback
+				// no need to select student; call success callback
 				XHR._maybeCall(success, null, [doc, $dom]);
 			}
 		}
 	}
 
-	getAverages(success : Function, fail : (ev : ErrorEvent) => any) : void {
-		new XHR('GET', AustinGradeRetriever.GRADES_URL)
+	export function getAverages(district: District, success : Function,
+		fail : (ev : ErrorEvent) => any) : void {
+		new XHR('GET', district.api.grades.url)
 			.success(success)
 			.fail(fail)
 			.send();
 	}
 
-	getClassGrades(urlHash : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
-		new XHR('GET', AustinGradeRetriever.GRADES_URL)
-			.success(success)
-			.fail(fail)
-			.params({'data': urlHash})
-			.send();
+	export function getClassGrades(district : District, urlHash : string,
+		gradesPage : string, success : Function, fail : (ev : ErrorEvent) => any) : void {
+		// GradeSpeed loads the page from a URL.
+		if (district.driver === 'gradespeed') {
+			new XHR('GET', district.api.classGrades.url)
+				.success(success)
+				.fail(fail)
+				.params(district.api.classGrades.makeQuery(urlHash, null))
+				.send();
+		}
+		// txConnect loads class grades using an AJAX postback. This means we
+		// need to take into account the page state of the loaded grades page
+		// before making the class grade load request.
+		else if (district.driver === 'txconnect') {
+			var $dom = document.createElement('div');
+			$dom.innerHTML = gradesPage;
+			var state = getPageState($dom);
+			new XHR('GET', district.api.classGrades.url)
+				.success(success)
+				.fail(fail)
+				.params(district.api.classGrades.makeQuery(urlHash, state))
+				.send();
+		}
 	}
+
 }
-
-var GRADE_RETRIEVERS = {
-	ROUNDROCK: RoundRockGradeRetriever,
-	AUSTIN: AustinGradeRetriever
-};

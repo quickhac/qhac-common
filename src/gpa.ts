@@ -18,8 +18,8 @@ module GPACalc {
 	/** Calculates the unweighted grade point average of a list of courses. */
 	export function unweighted(grades: Course[]) : number {
 		return grades.map(
-			(x) => x.semesterAverages.map(
-				(y) => gradePoint(y, 0))
+			(x) => x.semesters.map(
+				(y) => gradePoint(y.average, 0))
 			).flatten().average();
 	}
 
@@ -32,7 +32,7 @@ module GPACalc {
 			(grades: Course[], honors: string[], honorsOffset: number) : number {
 		return grades.map(function(x) {
 				var offset = (honors.indexOf(x.title) == -1) ? 0 : honorsOffset;
-				return x.semesterAverages.map((y) => gradePoint(y, offset));
+				return x.semesters.map((y) => gradePoint(y.average, offset));
 			}).flatten().average();
 	}
 }

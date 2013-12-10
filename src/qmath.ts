@@ -59,3 +59,14 @@ Array.prototype.flatten = function() : any[] {
 
 	return newList;
 }
+
+/** Returns a list of natural numbers in the form [0, 1, 2, ...] of the given length. */
+var upto = function(n : number) : number[] {
+	var list = [];
+
+	for (var i = 0; i < n; i++) {
+		list[i] = i;
+	}
+
+	return list;
+}
