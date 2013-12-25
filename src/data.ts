@@ -57,10 +57,11 @@ interface Assignment {
 interface District {
 	name: string;
 	driver: string; // GradeSpeed or txConnect?
-	semesters: number;
-	cyclesPerSemester: number;
 	examWeight: number;
 	columnOffsets: ColumnOffsets;
+	// If the averages need to be loaded shortly before the class grades are
+	// loaded, this setting should be set to true.
+	classGradesRequiresAverageLoaded: boolean;
 	api: GradeAPI;
 }
 

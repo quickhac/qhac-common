@@ -7,13 +7,12 @@ module Districts {
 	export var roundrock : District = {
 		name: 'Round Rock ISD',
 		driver: 'gradespeed',
-		semesters: 2,
-		cyclesPerSemester: 3,
 		examWeight: 15,
 		columnOffsets: {
 			title: 0,
 			grades: 2
 		},
+		classGradesRequiresAverageLoaded: true,
 		api: {
 			login: {
 				url: 'https://accesscenter.roundrockisd.org/homeaccess/default.aspx',
@@ -42,7 +41,7 @@ module Districts {
 				method: 'GET'
 			},
 			classGrades: {
-				url: 'https://accesscenter.roundrockisd.org/homeaccess/Student/Gradespeed.aspx?target=https://gradebook.roundrockisd.org/pc/displaygrades.aspx',
+				url: 'https://gradebook.roundrockisd.org/pc/displaygrades.aspx',
 				method: 'GET',
 				makeQuery: (hash : string, state : ASPNETPageState) => {return {
 					data : hash
@@ -55,13 +54,12 @@ module Districts {
 	export var austin : District = {
 		name: 'Austin ISD',
 		driver: 'gradespeed',
-		semesters: 2,
-		cyclesPerSemester: 3,
-		examWeight: 15,
+		examWeight: 25,
 		columnOffsets: {
 			title: 1,
 			grades: 3
 		},
+		classGradesRequiresAverageLoaded: false,
 		api: {
 			login: {
 				url: 'https://gradespeed.austinisd.org/pc/default.aspx?DistrictID=227901',
