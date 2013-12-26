@@ -14,7 +14,7 @@ interface Node {
 	attr(x : string) : string;
 	findClass(x : string) : NodeList;
 	findTag(x : string) : NodeList;
-	// innerText and innerHTML warning suppression
+	// warning suppression
 	innerText : string;
 	innerHTML : string;
 }
@@ -25,7 +25,7 @@ interface Element {
 	attr(x : string) : string;
 	findClass(x : string) : NodeList;
 	findTag(x : string) : NodeList;
-	// innerText and innerHTML warning suppression
+	// warning suppression
 	innerText : string;
 	innerHTML : string;
 }
@@ -33,6 +33,7 @@ interface Element {
 interface NodeList {
 	map(f : (x : Node) => any) : any;
 	splice(idx : number) : Node[];
+	toArray() : Node[];
 }
 
 HTMLElement.prototype.find = HTMLElement.prototype.querySelectorAll;
@@ -58,6 +59,16 @@ NodeList.prototype.map = function (f : (x : Node) => any) {
 
 	for (var i = 0; i < this.length; i++) {
 		newList[i] = f(this[i]);
+	}
+
+	return newList;
+}
+
+NodeList.prototype.toArray = function () {
+	var newList = [];
+
+	for (var i = 0; i < this.length; i++) {
+		newList[i] = this[i];
 	}
 
 	return newList;

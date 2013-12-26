@@ -117,6 +117,19 @@ interface Object {
 	mapOwnProperties(f : (k : string, v : any) => any) : any;
 }
 
+// CryptoJS methods to convince TypeScript not to throw errors
+var CryptoJS : Crypto;
+
+interface Crypto {
+	SHA1: (message : string) => WordArray;
+}
+
+interface WordArray {
+	sigBytes: number;
+	words: number[];
+	toString: () => string;
+}
+
 /** Iterates through all properties that belong to an object. */
 Object.prototype.eachOwnProperty = function(f : (k : string, v : any) => any) {
 	for (var k in this)
