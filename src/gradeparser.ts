@@ -48,11 +48,11 @@ module GradeParser {
 		// parse exam grade
 		var $exam = $cells[semParams.cyclesPerSemester];
 		var examGrade : number = NaN, examIsExempt : boolean = false;
-		if ($exam.innerHTML === '' || $exam.innerHTML === '&nbsp;') {}
-		else if ($exam.innerHTML === 'EX' || $exam.innerHTML === 'Exc')
+		if ($exam.innerText === '' || $exam.innerText === '&nbsp;') {}
+		else if ($exam.innerText === 'EX' || $exam.innerText === 'Exc')
 			examIsExempt = true;
 		else
-			examGrade = parseInt($exam.innerHTML);
+			examGrade = parseInt($exam.innerText);
 
 		// parse semester average
 		// TODO: calculate semester average instead of parsing it? because
