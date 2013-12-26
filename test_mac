@@ -1,0 +1,2 @@
+#!/bin/sh
+/usr/bin/open -a Google\ Chrome.app --args --disable-web-security
