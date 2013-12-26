@@ -142,6 +142,13 @@ module GradeParser {
 		return $rows.map((r : Node) => parseCourse(district, r, semParams));
 	}
 
+	/** Gets the name of the current student. */
+	export function getStudentName(district : District, doc : string) : string {
+		var $dom = document.createElement('div');
+		$dom.innerHTML = doc;
+		return $dom.findClass('StudentName')[0].innerText;
+	}
+
 	function parseAssignment($row : Node, is100Pt : boolean, catId : string) : Assignment {
 		// retrieve an element from the row and get its inner text
 		var getText = (cl : string) : string => $row.find('.' + cl)[0].innerText;
