@@ -1,5 +1,5 @@
 all:
-	tsc src/*.ts --outDir build
+	tsc src/*.ts --out build/qhac.js
 
 prepare:
 	mkdirs build
