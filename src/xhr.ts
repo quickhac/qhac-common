@@ -30,6 +30,16 @@ class XHR {
 			if (_this._xhr.readyState === 4) {
 				if (_this._xhr.status === 200) {
 					XHR._maybeCall(_this._success, _this._xhr, [_this._xhr.responseText, _this._xhr.responseXML]);
+				} else if (_this._xhr.status === 500) {
+					XHR._maybeCall(_this._fail, _this._xhr, [
+						new ErrorEvent('xhr', {
+							message: 'Internal Server Error',
+							error: {
+								message:'Internal Servor Error',
+								description: 'Something went wrong on the server side.'
+							}
+						})
+					]);
 				}
 			}
 		}
@@ -85,6 +95,7 @@ class XHR {
 
 	/** Sets the callback for when the request fails. */
 	fail(f : (ev : ErrorEvent) => any) : XHR {
+		this._fail = f;
 		this._xhr.onerror = function (ev : ErrorEvent) {
 			return XHR._maybeCall(f, this, [ev]);
 		}
