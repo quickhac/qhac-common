@@ -32,6 +32,8 @@ class XHR {
 					XHR._maybeCall(_this._success, _this._xhr, [_this._xhr.responseText, _this._xhr.responseXML]);
 				} else if (_this._xhr.status === 500) {
 					XHR._maybeCall(_this._fail, _this._xhr, [
+						// FIXME: TypeScript complains about the following call to the
+						// constructor of ErrorEvent not matching any signatures.
 						new ErrorEvent('xhr', {
 							message: 'Internal Server Error',
 							error: {
