@@ -117,7 +117,7 @@ interface Object {
 	mapOwnProperties(f : (k : string, v : any) => any) : any;
 }
 
-// CryptoJS methods to convince TypeScript not to throw errors
+// CryptoJS methods
 var CryptoJS : Crypto;
 
 interface Crypto {

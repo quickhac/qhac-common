@@ -9,7 +9,7 @@ interface Array {
 
 /** Returns only the numeric elements of an array. */
 Array.prototype.numerics = function() : any[] {
-	return this.filter((x) => !isNaN(x));
+	return this.filter((x) => !actuallyIsNaN(x));
 }
 
 /** Adds up the numeric elements of an array. */
@@ -23,7 +23,7 @@ Array.prototype.sum = function() : number {
 Array.prototype.average = function() : number {
 	var numerics = this.numerics();
 	if (numerics.length === 0) return NaN;
-	return numerics.sum() / numerics.length();
+	return numerics.sum() / numerics.length;
 }
 
 /** A map with two arrays in parallel. */
@@ -45,7 +45,7 @@ Array.prototype.weightedAverage = function(weights : any[]) : number {
 
 	if (numerics.length !== weightNums.length || numerics.length === 0) return NaN;
 
-	return numerics.pmap(weightNums, (x, y) => x * y) / weightNums.sum();
+	return numerics.pmap(weightNums, (x, y) => x * y).sum() / weightNums.sum();
 }
 
 /** Flattens an array of arrays into an array. */
@@ -69,4 +69,13 @@ var upto = function(n : number) : number[] {
 	}
 
 	return list;
+}
+
+/** Alternative to isNaN. Guarantees that any value that this function returns false for
+    can be used in numeric calculations without a hitch. */
+function actuallyIsNaN(x : any) : boolean {
+	return isNaN(x) ||
+		// null and undefined are not numeric to us
+		x === null || typeof x === undefined;
+		// anything else I missed?
 }

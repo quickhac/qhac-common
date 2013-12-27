@@ -27,7 +27,7 @@ module GradeParser {
 
 		// find a grade
 		var average = parseInt($link[0].innerText);
-		var urlHash = GRADE_CELL_URL_REGEX.exec($link[0].attr('href'))[1];
+		var urlHash = decodeURIComponent(GRADE_CELL_URL_REGEX.exec($link[0].attr('href'))[1]);
 
 		// return it
 		return {
@@ -206,6 +206,13 @@ module GradeParser {
 			note: note,
 			extraCredit: extraCredit
 		};
+	}
+
+	/** Adds up all of the bonus points in the list of assignments given.
+	  * TODO: put this in GradeEditor
+	  */
+	function totalBonuses(assignments : Assignment[]) : number {
+		return assignments.map((a) => a.extraCredit ? a.ptsEarned : 0).sum();
 	}
 
 	function parseCategory(district : District, catName : Node, $cat : Node, courseId : string) : Category {
