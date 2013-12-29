@@ -44,6 +44,21 @@ HTMLElement.prototype.findClass = HTMLElement.prototype.getElementsByClassName;
 
 HTMLElement.prototype.findTag = HTMLElement.prototype.getElementsByTagName;
 
+// use Sizzle if necessary
+if (typeof HTMLElement.prototype.querySelectorAll === 'undefined' && typeof Sizzle !== 'undefined') {
+	var Sizzle;
+
+	HTMLElement.prototype.find = function (sel : string) {
+		return Sizzle(sel, this);
+	};
+
+	HTMLElement.prototype.findClass = function (cls : string) {
+		return Sizzle('.' + cls, this);
+	};
+
+	HTMLElement.prototype.findTag = HTMLElement.prototype.find;
+}
+
 NodeList.prototype.splice = function (idx : number) : Node[] {
 	var newList = [];
 
