@@ -131,19 +131,19 @@ interface WordArray {
 }
 
 /** Iterates through all properties that belong to an object. */
-Object.prototype.eachOwnProperty = function(f : (k : string, v : any) => any) {
-	for (var k in this)
-		if (Object.prototype.hasOwnProperty.call(this, k))
-			f(k, this[k]);
+var eachOwnProperty = function(o : Object, f : (k : string, v : any) => any) {
+	for (var k in o)
+		if (Object.prototype.hasOwnProperty.call(o, k))
+			f(k, o[k]);
 }
 
 /** Map through all properties that belong to an object, returning an array.. */
-Object.prototype.mapOwnProperties = function(f : (k : string, v : any) => any) {
+var mapOwnProperties = function(o : Object, f : (k : string, v : any) => any) {
 	var newList = [];
 
-	for (var k in this)
-		if (Object.prototype.hasOwnProperty.call(this, k))
-			newList[newList.length] = f(k, this[k]);
+	for (var k in o)
+		if (Object.prototype.hasOwnProperty.call(o, k))
+			newList[newList.length] = f(k, o[k]);
 
 	return newList;
 }
