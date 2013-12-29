@@ -1,6 +1,7 @@
 /// <reference path='data.ts'/>
 /// <reference path='qmath.ts'/>
 /// <reference path='query.ts'/>
+/// <reference path='gradecalc.ts'/>
 
 // This is the GradeSpeed version. In the future, we will need to implement a
 // corresponding txConnect version.
@@ -228,7 +229,7 @@ module GradeParser {
 		// Find the category header so we can learn more about this category.
 		var $header = $cat.find('.TableHeader')[0];
 		// Some teachers don't put their assignments out of 100 points. Check if this is the case.
-		var is100Pt = !$header.find('th.AssignmentPointsPossible').length;
+		var is100Pt = !$cat.find('td.AssignmentPointsPossible').length;
 
 		// Find all of the rows in this category.
 		var $rows = $cat.findTag('tr');
@@ -250,13 +251,16 @@ module GradeParser {
 		// generate category ID
 		var catId = CryptoJS.SHA1(courseId + '|' + catNameMatches[1]).toString(); // "#{courseId}|#{categoryTitle}"
 
+		// parse assignments
+		var assignments = $assignments.map((a) => parseAssignment(a, is100Pt, catId));
+
 		return {
 			id: catId, 
 			title: catNameMatches[1],
 			weight: parseInt(catNameMatches[2]),
 			average: parseInt($averageCell.innerText),
-			bonus: 0 /* TODO */,
-			assignments: $assignments.map((a) => parseAssignment(a, is100Pt, catId))
+			bonus: GradeCalc.categoryBonuses(assignments),
+			assignments: assignments
 		};
 	}
 
