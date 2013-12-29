@@ -8,14 +8,14 @@ module GradeCalc {
 		// get a list of all cycle averages by mapping arrays and crazy stuff like that
 		var cycles : number[] = semester.cycles.map(c => c.average).numerics();
 
-		var cycleTotal : number,
+		var cycleAvg : number,
 		    cycleWeight : number,
 		    examGrade : number,
 		    examWeight : number;
 
 		// calculate the cycle grades
-		var cycleAvg = cycles.average();
-		var cycleWeight =
+		cycleAvg = cycles.average();
+		cycleWeight =
 			// total cycle weight + exam weight = 100, therefore
 			// total cycle weight = 100 - exam weight
 			(100 - district.examWeight)

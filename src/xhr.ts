@@ -50,7 +50,7 @@ class XHR {
 	/** Cretaes a parameter string from a hash of parameters. */
 	static _createParamsString(params : Object) : string {
 		if (typeof params === 'undefined') return '';
-		return params.mapOwnProperties(XHR._encodeParameter).join('&');
+		return mapOwnProperties(params, XHR._encodeParameter).join('&');
 	}
 
 	/** Sends a GET request with the specified parameters. */
@@ -58,6 +58,12 @@ class XHR {
 		// only add ? if params exist
 		var params = XHR._createParamsString(this._params);
 		if (params !== '') params = '?' + params;
+
+		// log
+		console.log('XHR loading: ' + this._url + ' via GET');
+		console.log('Params: ' + params);
+
+		// send
 		this._xhr.open('GET', this._url + params, true);
 		this._xhr.onreadystatechange = XHR._stateChangeHandler(this);
 		this._xhr.send(null);
@@ -66,10 +72,13 @@ class XHR {
 	/** Sends a POST request with the specified parameters. */
 	_sendPost() : void {
 		// open url
-		this._xhr.open('Post', this._url, true);
+		this._xhr.open('POST', this._url, true);
 		this._xhr.onreadystatechange = XHR._stateChangeHandler(this);
 
 		var paramString = XHR._createParamsString(this._params);
+
+		console.log('XHR loading: ' + this._url + ' via POST');
+		console.log('Params: ' + paramString);
 
 		// send the proper header information along with the request
 		this._xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
