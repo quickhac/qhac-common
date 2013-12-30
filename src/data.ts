@@ -8,19 +8,19 @@ interface Course {
 	semesters: Semester[];
 }
 
-interface Semester {
-	index: number; // index of this semester in the year
-	average: number;
-	examGrade: number;
-	examIsExempt: boolean; // NaN cannot distinguish between exempt and unentered
-	cycles: Cycle[];
-}
+	interface Semester {
+		index: number; // index of this semester in the year
+		average: number;
+		examGrade: number;
+		examIsExempt: boolean; // NaN cannot distinguish between exempt and unentered
+		cycles: Cycle[];
+	}
 
-interface Cycle {
-	index: number; // index of this cycle in the semester
-	average: number;
-	urlHash: string; // base64-encoded URL to pass to GradeSpeed to get class grades
-}
+		interface Cycle {
+			index: number; // index of this cycle in the semester
+			average: number;
+			urlHash: string; // base64-encoded URL to pass to GradeSpeed to get class grades
+		}
 
 interface ClassGrades {
 	title: string; // the title of the course to display
@@ -32,90 +32,115 @@ interface ClassGrades {
 	categories: Category[];
 }
 
-interface Category {
-	id: string; // SHA1 of "#{course id}|#{category title}"
-	title: string;
-	weight: number; // integer multiplier for this category (out of 100)
-	average: number;
-	bonus: number; // extra credit points to add to overall average from this category
-	assignments: Assignment[];
-}
+	interface Category {
+		id: string; // SHA1 of "#{course id}|#{category title}"
+		title: string;
+		weight: number; // integer multiplier for this category (out of 100)
+		average: number;
+		bonus: number; // extra credit points to add to overall average from this category
+		assignments: Assignment[];
+	}
 
-interface Assignment {
-	id: string; // SHA1 of "#{category id}|#{assignment title}"
-	title: string; // name of the assignment
-	date: string; // the date the assignment is due
-	ptsEarned: number;
-	ptsPossible: number;
-	weight: number; // weight of the assignment within the category (this is only shown in GradeSpeed if != 1)
-	note: string;
-	extraCredit: boolean;
-}
+		interface Assignment {
+			id: string; // SHA1 of "#{category id}|#{assignment title}"
+			title: string; // name of the assignment
+			date: string; // the date the assignment is due
+			ptsEarned: number;
+			ptsPossible: number;
+			weight: number; // weight of the assignment within the category (this is only shown in GradeSpeed if != 1)
+			note: string;
+			extraCredit: boolean;
+		}
 
 // District interop
 
+interface Driver {
+	name: string;
+	login: (district : District, uname : string, pass : string, studentID : string, success : Function, fail : (ev : ErrorEvent) => any) => void;
+	getAverages: (district: District, success : Function, fail : (ev : ErrorEvent) => any) => void;
+	getClassGrades: (district : District, urlHash : string, gradesPage : string, success : Function, fail : (ev : ErrorEvent) => any) => void;
+}
+
 interface District {
 	name: string;
-	driver: string; // GradeSpeed or txConnect?
+	driver: Driver; // GradeSpeed or txConnect?
 	examWeight: number;
 	columnOffsets: ColumnOffsets;
 	// If the averages need to be loaded shortly before the class grades are
 	// loaded, this setting should be set to true.
 	classGradesRequiresAverageLoaded: boolean;
-	api: GradeAPI;
+	server: Server;
 }
 
-interface GradeAPI {
-	login: LoginLoader;
-	disambiguate: DisambiguateLoader;
-	grades: GradeLoader;
-	classGrades: ClassGradeLoader;
-}
+	interface Server<T> {
+		api: T;
+	}
 
-interface LoginLoader {
-	url: string;
-	method: string;
-	// create parameter object to pass to GradeSpeed/txConnect
-	makeQuery: (u : string, p : string, state : ASPNETPageState) => Object;
-}
+		interface GradeSpeed {
+			login: GSLoginLoader;
+			disambiguate: GSDisambiguateLoader;
+			grades: GSGradeLoader;
+			classGrades: GSClassGradeLoader;
+		}
 
-interface DisambiguateLoader {
-	url: string;
-	method: string; // GET or POST?
-	// checks if disambiguation is required given the DOM of the page returned after login
-	isRequired: (dom : HTMLElement) => boolean;
-	// create parameter object to pass to GradeSpeed/txConnect
-	makeQuery: (id : string, state : ASPNETPageState) => Object;
-}
+			interface GSLoginLoader {
+				url: string;
+				method: string;
+				// create parameter object to pass to GradeSpeed/txConnect
+				makeQuery: (u : string, p : string, state : ASPNETPageState) => Object;
+			}
 
-interface GradeLoader {
-	url: string;
-	method: string;
-}
+			interface GSDisambiguateLoader {
+				url: string;
+				method: string; // GET or POST?
+				// checks if disambiguation is required given the DOM of the page returned after login
+				isRequired: (dom : HTMLElement) => boolean;
+				// create parameter object to pass to GradeSpeed/txConnect
+				makeQuery: (id : string, state : ASPNETPageState) => Object;
+			}
 
-interface ClassGradeLoader {
-	url: string;
-	method: string;
-	makeQuery: (hash : string, state : ASPNETPageState) => Object;
-}
+			interface GSGradeLoader {
+				url: string;
+				method: string;
+			}
 
-interface ColumnOffsets {
-	title: number;
-	grades: number;
-}
+			interface GSClassGradeLoader {
+				url: string;
+				method: string;
+				makeQuery: (hash : string, state : ASPNETPageState) => Object;
+			}
 
-interface ASPNETPageState {
-	viewstate: string;
-	eventvalidation: string;
-	eventtarget: string;
-	eventargument: string;
-}
+		interface txConnect {
+			login: TCLoginLoader;
+			grades: TCGradeLoader;
+		}
 
-// Helpful methods
-interface Object {
-	eachOwnProperty(f : (k : string, v : any) => any) : any;
-	mapOwnProperties(f : (k : string, v : any) => any) : any;
-}
+			interface TCLoginLoader {
+				url: string;
+				method: string;
+				makeQuery: (u : string, p : string) => Object;
+			}
+
+			interface TCGradeLoader {
+				url: string;
+				cycleGradesLinkId: string;
+				semesterGradesLinkId: string;
+				cyclePageSemesterSelectElemId: string;
+				semesterPageSemesterSelectElemId: string;
+				makeQuery(script : string, semester : string, studentId : string, ASPNETPageState : string) => Object;
+			}
+
+	interface ColumnOffsets {
+		title: number;
+		grades: number;
+	}
+
+	interface ASPNETPageState {
+		viewstate: string;
+		eventvalidation: string;
+		eventtarget: string;
+		eventargument: string;
+	}
 
 // CryptoJS methods
 var CryptoJS : Crypto;
