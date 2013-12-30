@@ -30,9 +30,11 @@ public class GradeRetriever {
 			@Override
 			void onSuccess(String response) {
 				final Document doc = Jsoup.parse(response);
-				final ASPNETPageState state = ASPNETPageState.parse(doc);
-				final HashMap<String, String> query = district.makeDisambiguateQuery(studentId, state);
-				XHR.send(client, district.disambiguateMethod(), district.disambiguateURL(), query, handler);
+				if (district.requiresDisambiguation(doc)) {
+					final ASPNETPageState state = ASPNETPageState.parse(doc);
+					final HashMap<String, String> query = district.makeDisambiguateQuery(studentId, state);
+					XHR.send(client, district.disambiguateMethod(), district.disambiguateURL(), query, handler);
+				} else handler.onSuccess(response);
 			}
 
 			@Override

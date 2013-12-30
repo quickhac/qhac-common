@@ -74,6 +74,7 @@ public final class XHR {
 				cb.onFailure(e);
 				return;
 			}
+			System.out.println("GET " + req.getURI());
 		} else {
 			try {
 				req = new HttpPost(builder.build());
@@ -87,6 +88,10 @@ public final class XHR {
 					params.add(new BasicNameValuePair(p.getKey(), p.getValue()));
 				UrlEncodedFormEntity entity = new UrlEncodedFormEntity(params, Consts.UTF_8);
 				((HttpPost) req).setEntity(entity);
+				System.out.println("POST " + req.getURI());
+				System.out.print("     with form data: ");
+				try { entity.writeTo(System.out); } catch (IOException e) {}
+				System.out.println();
 			}
 		}
 		

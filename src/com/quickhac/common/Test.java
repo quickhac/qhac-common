@@ -28,7 +28,6 @@ public class Test {
 
 			@Override
 			void onSuccess(String response) {
-				System.out.println(response);
 				
 				retriever.getAverages(new XHR.ResponseHandler() {
 
@@ -39,6 +38,7 @@ public class Test {
 
 					@Override
 					void onFailure(Exception e) {
+						System.err.println("Something failed!");
 						e.printStackTrace();
 					}
 					

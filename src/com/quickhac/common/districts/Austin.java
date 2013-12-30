@@ -49,17 +49,17 @@ public class Austin extends GradeSpeedDistrict {
 			final ASPNETPageState state) {
 		final HashMap<String, String> query = new HashMap<String, String>();
 		query.put("__EVENTTARGET", "_ctl0$ddlStudents");
-		query.put("__EVENTARGUMENT", null);
-		query.put("__LASTFOCUS", null);
+		query.put("__EVENTARGUMENT", "");
+		query.put("__LASTFOCUS", "");
 		query.put("__VIEWSTATE", state.viewstate);
 		query.put("__scrollLeft", "0");
 		query.put("__scrollTop", "0");
 		query.put("__EVENTVALIDATION", state.eventvalidation);
-		query.put("__RUNEVENTTARGET", null);
-		query.put("__RUNEVENTARGUMENT", null);
-		query.put("__RUNEVENTARGUMENT2", null);
+		query.put("__RUNEVENTTARGET", "");
+		query.put("__RUNEVENTARGUMENT", "");
+		query.put("__RUNEVENTARGUMENT2", "");
 		query.put("_ctl0:ddlStudents", id);
-		return null;
+		return query;
 	}
 
 	@Override
