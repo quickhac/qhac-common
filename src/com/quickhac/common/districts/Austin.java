@@ -14,7 +14,7 @@ public class Austin extends GradeSpeedDistrict {
 		return "https://gradespeed.austinisd.org/pc/default.aspx?DistrictID=227901";
 	}
 	@Override
-	public String loginMethod() { return "GET"; }
+	public String loginMethod() { return "POST"; }
 	@Override
 	public HashMap<String, String> makeLoginQuery(final String user, final String pass,
 			final ASPNETPageState state) {
