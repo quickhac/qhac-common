@@ -23,21 +23,21 @@ public class VerifiedHttpClientFactory {
 	
 	public DefaultHttpClient getNewHttpClient() {
 		try {
-			KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+			final KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
 			trustStore.load(null, null);
 			
-			SSLSocketFactory factory = new VerifiedSocketFactory(trustStore);
+			final SSLSocketFactory factory = new VerifiedSocketFactory(trustStore);
 			factory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 			
-			HttpParams params = new BasicHttpParams();
+			final HttpParams params = new BasicHttpParams();
 			HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
 			HttpProtocolParams.setContentCharset(params,  HTTP.UTF_8);
 			
-			SchemeRegistry registry = new SchemeRegistry();
+			final SchemeRegistry registry = new SchemeRegistry();
 			registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 			registry.register(new Scheme("https", factory, 443));
 			
-			ClientConnectionManager manager = new ThreadSafeClientConnManager(params, registry);
+			final ClientConnectionManager manager = new ThreadSafeClientConnManager(params, registry);
 			
 			return new DefaultHttpClient(manager, params);
 		} catch (Exception e) {

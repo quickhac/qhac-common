@@ -8,8 +8,8 @@ import org.jsoup.nodes.Document;
 
 public class GradeRetriever {
 	
-	DefaultHttpClient client;
-	GradeSpeedDistrict district;
+	final DefaultHttpClient client;
+	final GradeSpeedDistrict district;
 	
 	/**
 	 * Creates a new grade retriever for the specified district.
@@ -68,7 +68,7 @@ public class GradeRetriever {
 		XHR.send(client, district.gradesMethod(), district.gradesURL(), null, handler);
 	}
 	
-	public void getCycle(final String urlHash, Document gradesPage, final XHR.ResponseHandler handler) {
+	public void getCycle(final String urlHash, final Document gradesPage, final XHR.ResponseHandler handler) {
 		ASPNETPageState state = null;
 		
 		// parse grades page if necessary

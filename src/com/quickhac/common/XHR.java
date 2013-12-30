@@ -52,7 +52,7 @@ public final class XHR {
 			throw new IllegalArgumentException("Unsupported HTTP request type: " + method);
 
 		// construct a URI
-		URIBuilder builder;
+		final URIBuilder builder;
 		try {
 			builder = new URIBuilder(url);
 		} catch (URISyntaxException e) {
@@ -61,7 +61,7 @@ public final class XHR {
 		}
 		
 		// make the request
-		HttpUriRequest req;
+		final HttpUriRequest req;
 		// GET and POST require that parameters be put in different places in
 		// the request.
 		if (method == "GET") {
@@ -83,10 +83,10 @@ public final class XHR {
 				return;
 			}
 			if (par != null) {
-				List<NameValuePair> params = new LinkedList<NameValuePair>();
+				final List<NameValuePair> params = new LinkedList<NameValuePair>();
 				for (Entry<String, String> p : par.entrySet())
 					params.add(new BasicNameValuePair(p.getKey(), p.getValue()));
-				UrlEncodedFormEntity entity = new UrlEncodedFormEntity(params, Consts.UTF_8);
+				final UrlEncodedFormEntity entity = new UrlEncodedFormEntity(params, Consts.UTF_8);
 				((HttpPost) req).setEntity(entity);
 				System.out.println("POST " + req.getURI());
 				System.out.print("     with form data: ");
@@ -96,7 +96,7 @@ public final class XHR {
 		}
 		
 		// execute the request and try to get a response
-		HttpResponse response;
+		final HttpResponse response;
 		try {
 			response = client.execute(req);
 		} catch (ClientProtocolException e) {
@@ -108,8 +108,8 @@ public final class XHR {
 		}
 		
 		// process the response
-		HttpEntity responseEntity = response.getEntity();
-		String responseString;
+		final HttpEntity responseEntity = response.getEntity();
+		final String responseString;
 		try {
 			responseString = EntityUtils.toString(responseEntity);
 		} catch (ParseException e) {
@@ -123,7 +123,7 @@ public final class XHR {
 	}
 	
 	public static class RedirectStrategy extends DefaultRedirectStrategy {            
-		public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context)  {
+		public boolean isRedirected(final HttpRequest request, final HttpResponse response, final HttpContext context)  {
 			boolean isRedirect = false;
 			try {
 				isRedirect = super.isRedirected(request, response, context);
@@ -131,7 +131,7 @@ public final class XHR {
 				e.printStackTrace();
 			}
 			if (!isRedirect) {
-				int responseCode = response.getStatusLine().getStatusCode();
+				final int responseCode = response.getStatusLine().getStatusCode();
 				if (responseCode == 301 || responseCode == 302) {
 					return true;
 				}
