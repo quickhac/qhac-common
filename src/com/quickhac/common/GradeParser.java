@@ -80,7 +80,7 @@ public class GradeParser {
 		return courses;
 	}
 	
-	ClassGrades parseClassGrades(final String html, final String urlHash, final int semesterIndex,
+	public ClassGrades parseClassGrades(final String html, final String urlHash, final int semesterIndex,
 			final int cycleIndex) {
 		// set up DOM for parsing
 		final Document doc = Jsoup.parse(html);
@@ -88,7 +88,7 @@ public class GradeParser {
 		// class name cell contains title and period
 		// the matches from this will be ["Class Title", "xx"] (xx = period)
 		final Matcher classNameMatches = CLASS_NAME_REGEX.matcher(
-				doc.getElementsByClass("h3.ClassName").first().text());
+				doc.getElementsByClass("ClassName").first().text());
 		classNameMatches.find();
 		
 		// get category names
@@ -106,15 +106,21 @@ public class GradeParser {
 				doc.getElementsByClass("CurrentAverage").first().text());
 		averageMatcher.find();
 		
+		// parse categories
+		final Category[] cats = new Category[$categories.size()];
+		assert(catNames.size() == $categories.size());
+		for (int i = 0; i < cats.length; i++)
+			cats[i] = parseCategory(catNames.get(i), $categories.get(i), courseId);
+		
 		// return class grades
 		final ClassGrades grades = new ClassGrades();
-		grades.title = classNameMatches.group(0);
+		grades.title = classNameMatches.group(1);
 		grades.urlHash = urlHash;
-		grades.period = Integer.valueOf(classNameMatches.group(1));
+		grades.period = Integer.valueOf(classNameMatches.group(2));
 		grades.semesterIndex = semesterIndex;
 		grades.cycleIndex = cycleIndex;
 		grades.average = Integer.valueOf(averageMatcher.group(0));
-		// TODO: categories
+		grades.categories = cats;
 		return grades;
 	}
 	
@@ -242,11 +248,11 @@ public class GradeParser {
 		final Elements $assignments = $cat.select("tr.DataRow, tr.DataRowAlt");
 		
 		// Find the average cell
-		final Element[] $averageRow = (Element[]) $rows.last().getElementsByTag("td").toArray();
+		final Elements $averageRow = $rows.last().getElementsByTag("td");
 		Element $averageCell = null;
-		for (int i = 0; i < $averageRow.length; i++)
-			if ($averageRow[i].text().contains("Average")) {
-				$averageCell = $averageRow[i + 1];
+		for (int i = 0; i < $averageRow.size(); i++)
+			if ($averageRow.get(i).text().contains("Average")) {
+				$averageCell = $averageRow.get(i + 1);
 				break;
 			}
 		
@@ -261,9 +267,9 @@ public class GradeParser {
 		
 		final Category cat = new Category();
 		cat.id = catId;
-		cat.title = catNameMatches.group(0);
-		cat.weight = Integer.valueOf(catNameMatches.group(1));
-		cat.average = Double.valueOf($averageCell.text());
+		cat.title = catNameMatches.group(1);
+		cat.weight = Integer.valueOf(catNameMatches.group(2));
+		cat.average = isNumeric($averageCell.text()) ? Double.valueOf($averageCell.text()) : null;
 		cat.bonus = 0; // TODO
 		cat.assignments = assignments;
 		return cat;
