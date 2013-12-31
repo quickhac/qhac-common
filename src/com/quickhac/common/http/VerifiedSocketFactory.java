@@ -15,7 +15,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import ch.boye.httpclientandroidlib.conn.ssl.SSLSocketFactory;
 
 public class VerifiedSocketFactory extends SSLSocketFactory {
 	final SSLContext sslContext = SSLContext.getInstance("TLS");
