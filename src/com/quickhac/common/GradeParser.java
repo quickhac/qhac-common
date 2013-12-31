@@ -344,7 +344,7 @@ public class GradeParser {
 	}
 	
 	String getCourseIdFromHash(String hash) {
-		return hash.split("|")[3];
+		return hash.split("\\|")[3];
 	}
 	
 	String decodeURIComponent(String str) {
