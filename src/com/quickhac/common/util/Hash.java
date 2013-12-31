@@ -19,7 +19,16 @@ public class Hash {
 		// fail silently (oops)
 		if (SHA1_HASHER == null) return str;
 		
-		return new String(SHA1_HASHER.digest(str.getBytes()));
+		return byteArrayToHexString(SHA1_HASHER.digest(str.getBytes()));
+	}
+	
+	public static String byteArrayToHexString(byte[] b) {
+		String result = "";
+		for (int i=0; i < b.length; i++) {
+			result +=
+					Integer.toString( ( b[i] & 0xff ) + 0x100, 16).substring( 1 );
+		}
+		return result;
 	}
 
 }

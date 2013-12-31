@@ -2,6 +2,7 @@ package com.quickhac.common;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.DatatypeConverter;
@@ -52,11 +53,13 @@ public class GradeParser {
 		// make semester parameters
 		final Elements $headerCells = $gradeTable.select("tr.TableHeader").first().getElementsByTag("th");
 		final SemesterParams semParams = new SemesterParams();
-		semParams.semesters = Integer.valueOf(
-				NUMERIC_REGEX.matcher($headerCells.last().text()).group(0));
-		semParams.cyclesPerSemester = Integer.valueOf(
-				NUMERIC_REGEX.matcher($headerCells.get($headerCells.size() - 3).text()).group(0))
-				/ semParams.semesters;
+		final Matcher semMatches = NUMERIC_REGEX.matcher($headerCells.last().text());
+		if (semMatches.find())
+			semParams.semesters = Integer.valueOf(semMatches.group(0));
+		final Matcher cycMatches = NUMERIC_REGEX.matcher($headerCells.get($headerCells.size() - 3).text());
+		if (cycMatches.find())
+			semParams.cyclesPerSemester = Integer.valueOf(cycMatches.group(0))
+					/ semParams.semesters;
 		
 		// find each course
 		final Elements $rows = $gradeTable.select("tr.DataRow, tr.DataRowAlt");
@@ -89,7 +92,7 @@ public class GradeParser {
 			// find the cells that are pertinent to this semester
 			// $semesterCells becomes [cycle, cycle, ... , cycle, exam, semester] after filtering
 			final int cellOffset = district.gradesColOffset() + i * (semParams.cyclesPerSemester + 2);
-			for (int j = 0; j < $semesterCells.length; i++)
+			for (int j = 0; j < $semesterCells.length; j++)
 				$semesterCells[j] = $cells.get(cellOffset + j);
 			// parse the semester
 			semesters[i] = parseSemester($semesterCells, i, semParams);
@@ -114,17 +117,22 @@ public class GradeParser {
 		// parse exam grade
 		final Element $exam = $cells[semParams.cyclesPerSemester];
 		int examGrade = -1; boolean examIsExempt = false;
-		if ($exam.text().equals("") || $exam.text().equals("&nbsp;")) {}
-		else if ($exam.text().equals("EX") || $exam.text().equals("Exc"))
+		final String examText = $exam.text();
+		if (examText.equals("EX") || examText.equals("Exc"))
 			examIsExempt = true;
-		else
+		else if (examText.matches("\\d+"))
 			examGrade = Integer.valueOf($exam.text());
 		
 		// parse semester average
 		// TODO: calculate semester average instead of parsing it? because
 		// GradeSpeed sometimes messes up
-		final int semesterAverage = Integer.valueOf(
+		final Integer semesterAverage;
+		final String semAvgText = $cells[semParams.cyclesPerSemester + 1].text();
+		if (semAvgText.matches("\\d+"))
+			semesterAverage = Integer.valueOf(
 				$cells[semParams.cyclesPerSemester + 1].text());
+		else
+			semesterAverage = null;
 		
 		// return a semester
 		final Semester semester = new Semester();
@@ -149,8 +157,12 @@ public class GradeParser {
 		
 		// find a grade
 		final int average = Integer.valueOf($link.first().text());
-		String urlHash = decodeURIComponent(
-				GRADE_CELL_URL_REGEX.matcher($link.first().attr("href")).group(0));
+		final Matcher urlHashMatcher = GRADE_CELL_URL_REGEX.matcher($link.first().attr("href"));
+		final String urlHash;
+		if (urlHashMatcher.find())
+			urlHash = decodeURIComponent(urlHashMatcher.group(1));
+		else
+			urlHash = null;
 		
 		// return it
 		final Cycle cycle = new Cycle();
@@ -170,7 +182,6 @@ public class GradeParser {
 								$links.first().attr("href").split("data=")[1] // get the data attribute
 										)));
 		}
-		// TODO
 		return null;
 	}
 	

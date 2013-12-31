@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 import com.quickhac.common.GradeParser;
 import com.quickhac.common.GradeRetriever;
+import com.quickhac.common.data.Course;
 import com.quickhac.common.districts.GradeSpeedDistrict;
 import com.quickhac.common.districts.impl.Austin;
 import com.quickhac.common.districts.impl.RoundRock;
@@ -38,7 +39,9 @@ public class Test {
 
 					@Override
 					public void onSuccess(String response) {
-						System.out.println(parser.parseAverages(response));
+						System.out.println("Almost finished...");
+						Course[] courses = parser.parseAverages(response);
+						System.out.println("Finished.");
 					}
 
 					@Override
