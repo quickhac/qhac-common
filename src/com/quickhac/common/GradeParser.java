@@ -14,6 +14,7 @@ import com.quickhac.common.data.*;
 import com.quickhac.common.districts.GradeSpeedDistrict;
 import com.quickhac.common.util.Base64;
 import com.quickhac.common.util.Hash;
+import com.quickhac.common.util.Numeric;
 
 public class GradeParser {
 	
@@ -268,7 +269,7 @@ public class GradeParser {
 		cat.id = catId;
 		cat.title = catNameMatches.group(1);
 		cat.weight = Integer.valueOf(catNameMatches.group(2));
-		cat.average = isNumeric($averageCell.text()) ? Double.valueOf($averageCell.text()) : null;
+		cat.average = Numeric.isNumeric($averageCell.text()) ? Double.valueOf($averageCell.text()) : null;
 		cat.bonus = 0; // TODO
 		cat.assignments = assignments;
 		return cat;
@@ -299,7 +300,7 @@ public class GradeParser {
 			ptsEarnedNum = Double.valueOf(ptsSplit[0]);
 			weight = Double.valueOf(ptsSplit[1]);
 		} else {
-			ptsEarnedNum = isNumeric(ptsEarned) ? Double.valueOf(ptsEarned) : null;
+			ptsEarnedNum = Numeric.isNumeric(ptsEarned) ? Double.valueOf(ptsEarned) : null;
 			weight = 1;
 		}
 		
@@ -358,10 +359,6 @@ public class GradeParser {
 	
 	String getTextByClass(Element parent, String klass) {
 		return parent.getElementsByClass(klass).first().text();
-	}
-	
-	boolean isNumeric(String num) {
-		return num.matches("((-|\\+)?[0-9]+(\\.[0-9]+)?)+");
 	}
 	
 	class SemesterParams {
