@@ -9,7 +9,7 @@ public class Assignment {
 	public Double ptsEarned;
 	public double ptsPossible;
 	public double weight;
-	public String node;
+	public String note;
 	public boolean extraCredit;
 
 }

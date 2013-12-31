@@ -37,6 +37,13 @@ public class GradeParser {
 	static final Pattern GRADE_CELL_URL_REGEX =
 			Pattern.compile("\\?data=([\\w\\d%]*)");
 	
+	static final Pattern CLASS_NAME_REGEX =
+			Pattern.compile("(.*) \\(Period (\\d+)\\)");
+	static final Pattern CATEGORY_NAME_REGEX =
+			Pattern.compile("^(.*) - (\\d+)%$");
+	static final Pattern ALT_CATEGORY_NAME_REGEX = // IB-MVPS grading
+			Pattern.compile("^(.*) - Each assignment counts (\\d+)");
+	
 	final GradeSpeedDistrict district;
 	
 	public GradeParser(final GradeSpeedDistrict d) {
@@ -71,6 +78,44 @@ public class GradeParser {
 			courses[i] = parseCourse($rows.get(i), semParams);
 		
 		return courses;
+	}
+	
+	ClassGrades parseClassGrades(final String html, final String urlHash, final int semesterIndex,
+			final int cycleIndex) {
+		// set up DOM for parsing
+		final Document doc = Jsoup.parse(html);
+		
+		// class name cell contains title and period
+		// the matches from this will be ["Class Title", "xx"] (xx = period)
+		final Matcher classNameMatches = CLASS_NAME_REGEX.matcher(
+				doc.getElementsByClass("h3.ClassName").first().text());
+		classNameMatches.find();
+		
+		// get category names
+		final Elements catNames = doc.getElementsByClass("CategoryName");
+		final Elements $categories = doc.getElementsByClass("DataTable");
+		// ignore first table, since it is the overall grades
+		$categories.remove(0);
+		
+		// generate course ID
+		final String courseId =
+				Hash.SHA1(new String(DatatypeConverter.parseBase64Binary(decodeURIComponent(urlHash))));
+		
+		// parse category average
+		final Matcher averageMatcher = NUMERIC_REGEX.matcher(
+				doc.getElementsByClass("CurrentAverage").first().text());
+		averageMatcher.find();
+		
+		// return class grades
+		final ClassGrades grades = new ClassGrades();
+		grades.title = classNameMatches.group(0);
+		grades.urlHash = urlHash;
+		grades.period = Integer.valueOf(classNameMatches.group(1));
+		grades.semesterIndex = semesterIndex;
+		grades.cycleIndex = cycleIndex;
+		grades.average = Integer.valueOf(averageMatcher.group(0));
+		// TODO: categories
+		return grades;
 	}
 	
 	Course parseCourse(final Element $row, final SemesterParams semParams) {
@@ -172,6 +217,113 @@ public class GradeParser {
 		return cycle;
 	}
 	
+	Category parseCategory(final Element $catName, final Element $cat,
+			final String courseId) {
+		// Try to retrieve a weight for each category. Since we have to support IB-MYP grading,
+		// category weights are not guaranteed to add up to 100%. However, regardless of which
+		// weighting scheme we are using, grade calculations should be able to use the weights
+		// as they are parsed below.
+		final Matcher catNameMatches = CATEGORY_NAME_REGEX.matcher($catName.text());
+		if (!catNameMatches.find()) {
+			catNameMatches.usePattern(ALT_CATEGORY_NAME_REGEX);
+			if (!catNameMatches.find())
+				System.err.println("Did not find category name.");
+		}
+		
+		// Find the category header so we can learn more about this category.
+		final Element $header = $cat.getElementsByClass("TableHeader").first();
+		// Some teachers don't put their assignments out of 100 points. Check if this is the case.
+		final boolean is100Pt = $cat.select("td.AssignmentPointsPossible").size() == 0;
+		
+		// Find all of the rows in this category.
+		final Elements $rows = $cat.getElementsByTag("tr");
+		
+		// Find all of the assignments
+		final Elements $assignments = $cat.select("tr.DataRow, tr.DataRowAlt");
+		
+		// Find the average cell
+		final Element[] $averageRow = (Element[]) $rows.last().getElementsByTag("td").toArray();
+		Element $averageCell = null;
+		for (int i = 0; i < $averageRow.length; i++)
+			if ($averageRow[i].text().contains("Average")) {
+				$averageCell = $averageRow[i + 1];
+				break;
+			}
+		
+		// generate category ID
+		final String catId = Hash.SHA1(courseId + '|' + catNameMatches.group(0));
+		
+		// parse assignments
+		Assignment[] assignments = new Assignment[$assignments.size()];
+		for (int i = 0; i < assignments.length; i++) {
+			assignments[i] = parseAssignment($assignments.get(i), is100Pt, catId);
+		}
+		
+		final Category cat = new Category();
+		cat.id = catId;
+		cat.title = catNameMatches.group(0);
+		cat.weight = Integer.valueOf(catNameMatches.group(1));
+		cat.average = Double.valueOf($averageCell.text());
+		cat.bonus = 0; // TODO
+		cat.assignments = assignments;
+		return cat;
+	}
+	
+	Assignment parseAssignment(final Element $row, final boolean is100Pt, final String catId) {
+		// get data
+		final String title        = getTextByClass($row, "AssignmentName");
+		final String dateDue      = getTextByClass($row, "DateDue");
+		final String dateAssigned = getTextByClass($row, "DateAssigned");
+		final String note         = getTextByClass($row, "AssignmentNote");
+		final String ptsEarned    = getTextByClass($row, "AssignmentGrade");
+		final int ptsPossNum      = is100Pt ? 100 : Integer.valueOf(
+				getTextByClass($row, "AssignmentPointsPossible"));
+		
+		// Retrieve both the points earned and the weight of the assignment. Some teachers
+		// put in assignments with weights; if so, they look like this:
+		//     88x0.6
+		//     90x0.2
+		//     100x0.2
+		// The first number is the number of points earned on the assignment; the second is
+		// the weight of the assignment within the category.
+		// If the weight is not specified, it is assumed to be 1.
+		Double ptsEarnedNum = null;
+		final double weight;
+		if (ptsEarned.contains("x")) {
+			String[] ptsSplit = ptsEarned.split("x");
+			ptsEarnedNum = Double.valueOf(ptsSplit[0]);
+			weight = Double.valueOf(ptsSplit[1]);
+		} else {
+			ptsEarnedNum = isNumeric(ptsEarned) ? Double.valueOf(ptsEarned) : null;
+			weight = 1;
+		}
+		
+		// generate the assignment ID
+		final String assignmentId = Hash.SHA1(catId + '|' + title);
+		
+		// Guess if the assignment is extra credit or not. GradeSpeed doesn't exactly
+		// just tell us if an assignment is extra credit or not, but we can guess
+		// from the assignment title and the note attached.
+		// If either contains something along the lines of 'extra credit', we assume
+		// that it is extra credit.
+		final boolean extraCredit =
+				title.matches(EXTRA_CREDIT_REGEX.toString()) ||
+				note.matches(EXTRA_CREDIT_NOTE_REGEX.toString());
+		
+		// return an assignment
+		final Assignment assignment = new Assignment();
+		assignment.id = assignmentId;
+		assignment.title = title;
+		assignment.dateDue = dateDue;
+		assignment.dateAssigned = dateAssigned;
+		assignment.ptsEarned = ptsEarnedNum;
+		assignment.ptsPossible = ptsPossNum;
+		assignment.weight = weight;
+		assignment.note = note;
+		assignment.extraCredit = extraCredit;
+		return assignment;
+	}
+	
 	String findCourseNum(final Elements $cells) {
 		// loop through the cells until we find one with a URL hash we can parse
 		for (int i = district.gradesColOffset(); i < $cells.size(); i++) {
@@ -197,6 +349,14 @@ public class GradeParser {
 			e.printStackTrace();
 			return str;
 		}
+	}
+	
+	String getTextByClass(Element parent, String klass) {
+		return parent.getElementsByClass(klass).first().text();
+	}
+	
+	boolean isNumeric(String num) {
+		return num.matches("((-|\\+)?[0-9]+(\\.[0-9]+)?)+");
 	}
 	
 	class SemesterParams {
