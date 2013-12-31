@@ -5,8 +5,6 @@ import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,6 +12,7 @@ import org.jsoup.select.Elements;
 
 import com.quickhac.common.data.*;
 import com.quickhac.common.districts.GradeSpeedDistrict;
+import com.quickhac.common.util.Base64;
 import com.quickhac.common.util.Hash;
 
 public class GradeParser {
@@ -99,7 +98,7 @@ public class GradeParser {
 		
 		// generate course ID
 		final String courseId =
-				Hash.SHA1(new String(DatatypeConverter.parseBase64Binary(decodeURIComponent(urlHash))));
+				Hash.SHA1(Base64.decode(decodeURIComponent(urlHash)));
 		
 		// parse category average
 		final Matcher averageMatcher = NUMERIC_REGEX.matcher(
@@ -336,9 +335,9 @@ public class GradeParser {
 			Elements $links = $cells.get(i).getElementsByTag("a");
 			if ($links.size() != 0) // if we found a link, parse the data hash
 				return getCourseIdFromHash( // get the course number from the decoded hash
-						new String(DatatypeConverter.parseBase64Binary( // decode the data attribute
+						Base64.decode( // decode the data attribute
 								$links.first().attr("href").split("data=")[1] // get the data attribute
-										)));
+										));
 		}
 		return null;
 	}
