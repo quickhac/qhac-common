@@ -6,6 +6,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import com.quickhac.common.districts.GradeSpeedDistrict;
+import com.quickhac.common.http.ASPNETPageState;
+import com.quickhac.common.http.VerifiedHttpClientFactory;
+import com.quickhac.common.http.XHR;
+
 public class GradeRetriever {
 	
 	final DefaultHttpClient client;
@@ -28,7 +33,7 @@ public class GradeRetriever {
 		final XHR.ResponseHandler disambiguate = new XHR.ResponseHandler() {
 
 			@Override
-			void onSuccess(String response) {
+			public void onSuccess(String response) {
 				final Document doc = Jsoup.parse(response);
 				if (district.requiresDisambiguation(doc)) {
 					final ASPNETPageState state = ASPNETPageState.parse(doc);
@@ -38,7 +43,7 @@ public class GradeRetriever {
 			}
 
 			@Override
-			void onFailure(Exception e) {
+			public void onFailure(Exception e) {
 				handler.onFailure(e);
 			}
 			
@@ -47,7 +52,7 @@ public class GradeRetriever {
 		final XHR.ResponseHandler doLogin = new XHR.ResponseHandler() {
 
 			@Override
-			void onSuccess(String response) {
+			public void onSuccess(String response) {
 				final Document doc = Jsoup.parse(response);
 				final ASPNETPageState state = ASPNETPageState.parse(doc);
 				final HashMap<String, String> query = district.makeLoginQuery(user, pass, state);
@@ -55,7 +60,7 @@ public class GradeRetriever {
 			}
 
 			@Override
-			void onFailure(Exception e) {
+			public void onFailure(Exception e) {
 				handler.onFailure(e);
 			}
 			
