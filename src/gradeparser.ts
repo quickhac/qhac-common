@@ -226,8 +226,6 @@ module GradeParser {
 			catNameMatches = catName.innerText.match(/^(.*) - Each assignment counts (\d+)/);
 		}
 
-		// Find the category header so we can learn more about this category.
-		var $header = $cat.find('.TableHeader')[0];
 		// Some teachers don't put their assignments out of 100 points. Check if this is the case.
 		var is100Pt = !$cat.find('td.AssignmentPointsPossible').length;
 
@@ -258,7 +256,7 @@ module GradeParser {
 			id: catId, 
 			title: catNameMatches[1],
 			weight: parseInt(catNameMatches[2]),
-			average: parseInt($averageCell.innerText),
+			average: parseFloat($averageCell.innerText),
 			bonus: GradeCalc.categoryBonuses(assignments),
 			assignments: assignments
 		};
