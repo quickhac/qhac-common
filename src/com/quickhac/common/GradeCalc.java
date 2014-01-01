@@ -33,11 +33,13 @@ public class GradeCalc {
 				// multiply the total cycle weight by the proportion of cycles that we are
 				// including in the calculation
 				* cycles.size() / semester.cycles.length;
-		weightedTotal += cycleAvg * cycleWeight;
-		weights += cycleWeight;
+		if (cycleWeight > 0) {
+			weightedTotal += cycleAvg * cycleWeight;
+			weights += cycleWeight;
+		}
 		
 		// calculate the exam grade
-		if (!semester.examIsExempt && semester.examGrade != null) {
+		if (!semester.examIsExempt && semester.examGrade != null && semester.examGrade != -1) {
 			weightedTotal += semester.examGrade * examWeight;
 			weights += examWeight;
 		}

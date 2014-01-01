@@ -174,24 +174,13 @@ public class GradeParser {
 		else if (examText.matches("\\d+"))
 			examGrade = Integer.valueOf($exam.text());
 		
-		// parse semester average
-		// TODO: calculate semester average instead of parsing it? because
-		// GradeSpeed sometimes messes up
-		final Integer semesterAverage;
-		final String semAvgText = $cells[semParams.cyclesPerSemester + 1].text();
-		if (semAvgText.matches("\\d+"))
-			semesterAverage = Integer.valueOf(
-				$cells[semParams.cyclesPerSemester + 1].text());
-		else
-			semesterAverage = null;
-		
 		// return a semester
 		final Semester semester = new Semester();
 		semester.index = index;
-		semester.average = semesterAverage;
 		semester.examGrade = examGrade;
 		semester.examIsExempt = examIsExempt;
 		semester.cycles = cycles;
+		semester.average = GradeCalc.semesterAverage(semester, district.examWeight());
 		return semester;
 	}
 	
@@ -236,8 +225,6 @@ public class GradeParser {
 				System.err.println("Did not find category name.");
 		}
 		
-		// Find the category header so we can learn more about this category.
-		final Element $header = $cat.getElementsByClass("TableHeader").first();
 		// Some teachers don't put their assignments out of 100 points. Check if this is the case.
 		final boolean is100Pt = $cat.select("td.AssignmentPointsPossible").size() == 0;
 		
@@ -270,7 +257,7 @@ public class GradeParser {
 		cat.title = catNameMatches.group(1);
 		cat.weight = Integer.valueOf(catNameMatches.group(2));
 		cat.average = Numeric.isNumeric($averageCell.text()) ? Double.valueOf($averageCell.text()) : null;
-		cat.bonus = 0; // TODO
+		cat.bonus = GradeCalc.categoryBonuses(assignments);
 		cat.assignments = assignments;
 		return cat;
 	}
