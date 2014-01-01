@@ -1,5 +1,7 @@
 package com.quickhac.common.util;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 public class Numeric {
@@ -18,6 +20,12 @@ public class Numeric {
 			}
 		
 		return sum / count;
+	}
+	
+	// http://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
+	public static double round(double d, int decimalPlaces) {
+		BigDecimal bd = new BigDecimal(d).setScale(decimalPlaces, RoundingMode.HALF_EVEN);
+		return bd.doubleValue();
 	}
 
 }
