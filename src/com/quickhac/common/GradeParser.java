@@ -85,10 +85,16 @@ public class GradeParser {
 		// set up DOM for parsing
 		final Document doc = Jsoup.parse(html);
 		
+		// sometimes GradeSpeed decides to return nothing
+		// if there's nothing to see, return nothing
+		final Elements $className = doc.getElementsByClass("ClassName");
+		if ($className.size() == 0)
+			return null;
+		
 		// class name cell contains title and period
 		// the matches from this will be ["Class Title", "xx"] (xx = period)
 		final Matcher classNameMatches = CLASS_NAME_REGEX.matcher(
-				doc.getElementsByClass("ClassName").first().text());
+				$className.first().text());
 		classNameMatches.find();
 		
 		// get category names
