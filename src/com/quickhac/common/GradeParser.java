@@ -284,8 +284,14 @@ public class GradeParser {
 		final double weight;
 		if (ptsEarned.contains("x")) {
 			String[] ptsSplit = ptsEarned.split("x");
-			ptsEarnedNum = Double.valueOf(ptsSplit[0]);
-			weight = Double.valueOf(ptsSplit[1]);
+			// some teachers like to enter 'Exc' for grades apparently, so check
+			// if our split is actually parseable.
+			if (Numeric.isNumeric(ptsSplit[0]) && Numeric.isNumeric(ptsSplit[1])) {
+				ptsEarnedNum = Double.valueOf(ptsSplit[0]);
+				weight = Double.valueOf(ptsSplit[1]);
+			} else {
+				weight = 1;
+			}
 		} else {
 			ptsEarnedNum = Numeric.isNumeric(ptsEarned) ? Double.valueOf(ptsEarned) : null;
 			weight = 1;
