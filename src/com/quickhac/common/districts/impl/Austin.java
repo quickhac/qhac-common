@@ -82,7 +82,9 @@ public class Austin extends GradeSpeedDistrict {
 	@Override
 	public HashMap<String, String> makeCycleQuery(String hash,
 			ASPNETPageState state) {
-		return new HashMap<String, String>();
+		HashMap<String, String> query = new HashMap<String, String>();
+		query.put("data", hash);
+		return query;
 	}
 
 	@Override
