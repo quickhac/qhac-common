@@ -14,6 +14,8 @@ public final class RoundRock extends GradeSpeedDistrict {
 	@Override
 	public int examWeight() { return 15; }
 	@Override
+	public double weightedGPABoost() { return 1; }
+	@Override
 	public boolean cycleGradesRequiresAveragesLoaded() { return true; }
 
 	@Override

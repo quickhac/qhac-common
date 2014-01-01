@@ -111,6 +111,11 @@ public class Austin extends GradeSpeedDistrict {
 	public int examWeight() {
 		return 25;
 	}
+	
+	@Override
+	public double weightedGPABoost() {
+		return 0;
+	}
 
 	@Override
 	public boolean cycleGradesRequiresAveragesLoaded() {

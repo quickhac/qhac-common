@@ -47,8 +47,8 @@ public class GPACalc {
 				if (courses[i].semesters[j].average != null)
 					semGradePoints.add(
 							gradePoint(courses[i].semesters[j].average,
-							honors.contains(courses[i].title) ? offset : 0.0 
-							));
+							honors.contains(courses[i].title) ? 1.0 : 0.0 
+							) + offset);
 		
 		// take the average
 		return Numeric.average(semGradePoints);
