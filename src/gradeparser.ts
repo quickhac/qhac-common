@@ -181,8 +181,13 @@ module GradeParser {
 			weight = 1;
 		} else {
 			var ptsSplit = ptsEarned.split('x');
-			ptsEarnedNum = parseFloat(ptsSplit[0]);
-			weight = parseFloat(ptsSplit[1]);
+			if (actuallyIsNaN(ptsSplit[0]) && actuallyIsNaN(ptsSplit[1])) {
+				ptsEarnedNum = NaN;
+				weight = 1;
+			} else {
+				ptsEarnedNum = parseFloat(ptsSplit[0]);
+				weight = parseFloat(ptsSplit[1]);
+			}
 		}
 
 		// generate the assignment ID
