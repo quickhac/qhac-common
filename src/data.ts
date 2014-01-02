@@ -87,6 +87,8 @@ interface DisambiguateLoader {
 	isRequired: (dom : HTMLElement) => boolean;
 	// create parameter object to pass to GradeSpeed/txConnect
 	makeQuery: (id : string, state : ASPNETPageState) => Object;
+	// parse a page and get the list of students available under the account
+	getDisambiguationChoices: (dom : HTMLElement) => DisambiguationChoice[];
 }
 
 interface GradeLoader {
@@ -98,6 +100,11 @@ interface ClassGradeLoader {
 	url: string;
 	method: string;
 	makeQuery: (hash : string, state : ASPNETPageState) => Object;
+}
+
+interface DisambiguationChoice {
+	name: string; // name of student
+	id: string; // student ID
 }
 
 interface ColumnOffsets {

@@ -26,7 +26,8 @@ module GradeRetriever {
 	 * information and callbacks.
 	 */
 	export function login(district : District, uname : string, pass : string,
-		studentID : string, success : Function, fail : (ev : ErrorEvent) => any)
+		success : (doc : string, $dom : HTMLElement, choices : DisambiguationChoice[], state : ASPNETPageState) => any,
+		fail : (ev : ErrorEvent) => any)
 		: void {
 		// get the login page
 		new XHR('GET', district.api.login.url)
@@ -49,38 +50,44 @@ module GradeRetriever {
 
 			// perform login
 			new XHR('POST', district.api.login.url)
-				.success(disambiguate)
+				.success(getDisambigChoices)
 				.fail(fail)
 				.params(query)
 				.send();
 		}
 
-		// select a student
-		function disambiguate(doc : string) {
+		// return student choices if there are any
+		function getDisambigChoices(doc : string) {
 			// load the page DOM
 			var $dom = document.createElement('div');
 			$dom.innerHTML = doc;
 
-			// only disambiguate if necessary
+			var state = getPageState($dom);
+
+			// only return choices if there are any; the success callback should
+			// detect whether the disambiguation choices array is null or not.
 			if (district.api.disambiguate.isRequired($dom)) {
-				// load the page state
-				var state = getPageState($dom);
-
-				// construct a query
-				var query = district.api.disambiguate.makeQuery(
-					studentID, state);
-
-				// pass query to GradeSpeed
-				new XHR(district.api.disambiguate.method, district.api.disambiguate.url)
-					.success(success)
-					.fail(fail)
-					.params(query)
-					.send();
+				var choices = district.api.disambiguate.getDisambiguationChoices($dom);
+				XHR._maybeCall(success, null, [doc, $dom, choices, state])
 			} else {
-				// no need to select student; call success callback
-				XHR._maybeCall(success, null, [doc, $dom]);
+				XHR._maybeCall(success, null, [doc, $dom, null, state]);
 			}
 		}
+	}
+
+	// select a student
+	export function disambiguate(district : District, studentID : string,
+		state : ASPNETPageState, success : Function,
+		fail : (ev : ErrorEvent) => any) : void {
+		// construct a query
+		var query = district.api.disambiguate.makeQuery(studentID, state);
+
+		// pass query to GradeSpeed
+		new XHR(district.api.disambiguate.method, district.api.disambiguate.url)
+			.success(success)
+			.fail(fail)
+			.params(query)
+			.send();
 	}
 
 	export function getAverages(district: District, success : Function,
