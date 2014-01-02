@@ -58,6 +58,7 @@ interface District {
 	name: string;
 	driver: string; // GradeSpeed or txConnect?
 	examWeight: number;
+	gpaOffset: number;
 	columnOffsets: ColumnOffsets;
 	// If the averages need to be loaded shortly before the class grades are
 	// loaded, this setting should be set to true.

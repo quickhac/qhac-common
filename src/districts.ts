@@ -8,6 +8,7 @@ module Districts {
 		name: 'Round Rock ISD',
 		driver: 'gradespeed',
 		examWeight: 15,
+		gpaOffset: 1,
 		columnOffsets: {
 			title: 0,
 			grades: 2
@@ -55,6 +56,7 @@ module Districts {
 		name: 'Austin ISD',
 		driver: 'gradespeed',
 		examWeight: 25,
+		gpaOffset: 0,
 		columnOffsets: {
 			title: 1,
 			grades: 3
