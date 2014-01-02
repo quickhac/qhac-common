@@ -119,12 +119,6 @@ interface ASPNETPageState {
 	eventargument: string;
 }
 
-// Helpful methods
-interface Object {
-	eachOwnProperty(f : (k : string, v : any) => any) : any;
-	mapOwnProperties(f : (k : string, v : any) => any) : any;
-}
-
 // CryptoJS methods
 var CryptoJS : Crypto;
 
