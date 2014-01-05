@@ -1,13 +1,22 @@
 package com.quickhac.common.districts.impl;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import com.quickhac.common.data.DisambiguationChoice;
 import com.quickhac.common.districts.GradeSpeedDistrict;
 import com.quickhac.common.http.ASPNETPageState;
 
 public final class RoundRock extends GradeSpeedDistrict {
+	
+	static final Pattern STUDENT_ID_REGEX =
+			Pattern.compile("\\?student_id=(\\d+)");
 	
 	@Override
 	public String name() { return "Round Rock ISD"; }
@@ -31,6 +40,31 @@ public final class RoundRock extends GradeSpeedDistrict {
 	}
 	@Override
 	public String disambiguateMethod() { return "GET"; }
+	@Override
+	public DisambiguationChoice[] getDisambiguationChoices(Document doc) {
+		// find the students table
+		final Elements students = doc.select("#ctl00_plnMain_dgStudents .ItemRow a, #ctl00_plnMain_dgStudents .AlternateItemRow a");
+		final DisambiguationChoice[] choices = new DisambiguationChoice[students.size()];
+		
+		// parse each student
+		final Iterator<Element> studentIterator = students.iterator();
+		int i = 0;
+		while (studentIterator.hasNext()) {
+			final Element studentElem = studentIterator.next();
+			final DisambiguationChoice choice = new DisambiguationChoice();
+			
+			choice.name = studentElem.text();
+			
+			final Matcher idMatcher = STUDENT_ID_REGEX.matcher(studentElem.attr("href"));
+			if (idMatcher.find())
+				choice.id = idMatcher.group(1);
+			
+			choices[i] = choice;
+			i++;
+		}
+		
+		return choices;
+	}
 
 	@Override
 	public String gradesURL() {
@@ -70,7 +104,7 @@ public final class RoundRock extends GradeSpeedDistrict {
 	
 	@Override
 	public boolean requiresDisambiguation(Document doc) {
-		return true; // TODO: not always required
+		return doc.getElementById("ctl00_plnMain_dgStudents") != null;
 	}
 	
 	@Override

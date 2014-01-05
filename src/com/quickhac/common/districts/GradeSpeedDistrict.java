@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import org.jsoup.nodes.Document;
 
+import com.quickhac.common.data.DisambiguationChoice;
 import com.quickhac.common.http.ASPNETPageState;
 
 public abstract class GradeSpeedDistrict extends District {
@@ -19,6 +20,7 @@ public abstract class GradeSpeedDistrict extends District {
 	public abstract String disambiguateMethod();
 	public abstract HashMap<String, String> makeDisambiguateQuery(String id,
 			ASPNETPageState state);
+	public abstract DisambiguationChoice[] getDisambiguationChoices(Document doc);
 	
 	public abstract String gradesURL();
 	public abstract String gradesMethod();

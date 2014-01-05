@@ -1,9 +1,13 @@
 package com.quickhac.common.districts.impl;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import com.quickhac.common.data.DisambiguationChoice;
 import com.quickhac.common.districts.GradeSpeedDistrict;
 import com.quickhac.common.http.ASPNETPageState;
 
@@ -43,7 +47,6 @@ public class Austin extends GradeSpeedDistrict {
 	}
 	@Override
 	public String disambiguateMethod() { return "POST"; }
-
 	@Override
 	public HashMap<String, String> makeDisambiguateQuery(final String id,
 			final ASPNETPageState state) {
@@ -60,6 +63,28 @@ public class Austin extends GradeSpeedDistrict {
 		query.put("__RUNEVENTARGUMENT2", "");
 		query.put("_ctl0:ddlStudents", id);
 		return query;
+	}
+	@Override
+	public DisambiguationChoice[] getDisambiguationChoices(Document doc) {
+		// find the students table
+		final Elements students = doc.select("#_ctl0_ddlStudents option");
+		final DisambiguationChoice[] choices = new DisambiguationChoice[students.size()];
+		
+		// parse each student
+		final Iterator<Element> studentIterator = students.iterator();
+		int i = 0;
+		while (studentIterator.hasNext()) {
+			final Element studentElem = studentIterator.next();
+			final DisambiguationChoice choice = new DisambiguationChoice();
+			
+			choice.name = studentElem.text();
+			choice.id = studentElem.attr("value");
+			
+			choices[i] = choice;
+			i++;
+		}
+		
+		return choices;
 	}
 
 	@Override

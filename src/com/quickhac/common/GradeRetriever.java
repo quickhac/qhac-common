@@ -6,6 +6,7 @@ import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import com.quickhac.common.data.DisambiguationChoice;
 import com.quickhac.common.districts.GradeSpeedDistrict;
 import com.quickhac.common.http.ASPNETPageState;
 import com.quickhac.common.http.VerifiedHttpClientFactory;
@@ -29,17 +30,18 @@ public class GradeRetriever {
 	 * Logs into a district grades website with the given credentials and
 	 * specified callback. 
 	 */
-	public void login(final String user, final String pass, final String studentId, final XHR.ResponseHandler handler) {
-		final XHR.ResponseHandler disambiguate = new XHR.ResponseHandler() {
+	public void login(final String user, final String pass, final LoginResponseHandler handler) {
+		final XHR.ResponseHandler getDisambigChoices = new XHR.ResponseHandler() {
 
 			@Override
 			public void onSuccess(String response) {
 				final Document doc = Jsoup.parse(response);
+				final ASPNETPageState state = ASPNETPageState.parse(doc);
+				
 				if (district.requiresDisambiguation(doc)) {
-					final ASPNETPageState state = ASPNETPageState.parse(doc);
-					final HashMap<String, String> query = district.makeDisambiguateQuery(studentId, state);
-					XHR.send(client, district.disambiguateMethod(), district.disambiguateURL(), query, handler);
-				} else handler.onSuccess(response);
+					final DisambiguationChoice[] choices = district.getDisambiguationChoices(doc);
+					handler.onRequiresDisambiguation(response, choices, state);
+				} else handler.onDoesNotRequireDisambiguation(response);
 			}
 
 			@Override
@@ -56,7 +58,7 @@ public class GradeRetriever {
 				final Document doc = Jsoup.parse(response);
 				final ASPNETPageState state = ASPNETPageState.parse(doc);
 				final HashMap<String, String> query = district.makeLoginQuery(user, pass, state);
-				XHR.send(client, district.loginMethod(), district.loginURL(), query, disambiguate);
+				XHR.send(client, district.loginMethod(), district.loginURL(), query, getDisambigChoices);
 			}
 
 			@Override
@@ -67,6 +69,12 @@ public class GradeRetriever {
 		};
 		
 		XHR.send(client, "GET", district.loginURL(), null, doLogin);
+	}
+	
+	public void disambiguate(final String studentId, final ASPNETPageState state, final XHR.ResponseHandler handler) {
+		HashMap<String, String> query = district.makeDisambiguateQuery(studentId, state);
+		
+		XHR.send(client, district.disambiguateMethod(), district.disambiguateURL(), query, handler);
 	}
 	
 	public void getAverages(final XHR.ResponseHandler handler) {
@@ -85,6 +93,12 @@ public class GradeRetriever {
 		
 		final HashMap<String, String> query = district.makeCycleQuery(urlHash, state);
 		XHR.send(client, district.cycleMethod(), district.cycleURL(), query, handler);
+	}
+	
+	public static abstract class LoginResponseHandler {
+		public abstract void onRequiresDisambiguation(String response, DisambiguationChoice[] students, ASPNETPageState state);
+		public abstract void onDoesNotRequireDisambiguation(String response);
+		public abstract void onFailure(Exception e);
 	}
 
 }
