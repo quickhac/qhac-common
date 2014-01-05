@@ -3,7 +3,6 @@ package com.quickhac.common.http;
 import java.security.KeyStore;
 
 import ch.boye.httpclientandroidlib.HttpVersion;
-import ch.boye.httpclientandroidlib.client.HttpClient;
 import ch.boye.httpclientandroidlib.conn.ClientConnectionManager;
 import ch.boye.httpclientandroidlib.conn.scheme.PlainSocketFactory;
 import ch.boye.httpclientandroidlib.conn.scheme.Scheme;
@@ -16,6 +15,7 @@ import ch.boye.httpclientandroidlib.params.HttpParams;
 import ch.boye.httpclientandroidlib.params.HttpProtocolParams;
 import ch.boye.httpclientandroidlib.protocol.HTTP;
 
+@SuppressWarnings("deprecation")
 public class VerifiedHttpClientFactory {
 	public VerifiedHttpClientFactory() {
 		

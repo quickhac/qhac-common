@@ -43,6 +43,7 @@ public class Test {
 					@Override
 					public void onSuccess(String response) {
 						System.out.println("Almost finished...");
+						@SuppressWarnings("unused")
 						Course[] courses = parser.parseAverages(response);
 						System.out.println("Finished.");
 						
@@ -60,7 +61,9 @@ public class Test {
 								
 								// set breakpoints somewhere below to test quality
 								// of calculations
+								@SuppressWarnings("unused")
 								Double catAvg = GradeCalc.categoryAverage(grades.categories[0].assignments);
+								@SuppressWarnings("unused")
 								Integer cycAvg = GradeCalc.cycleAverage(grades);
 								System.out.println("GradeCalc testing finished.");
 							}
