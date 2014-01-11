@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java 1.7"/>
 	<classpathentry kind="lib" path="/Users/xsznix/Programming/qHAC/lib/jsoup-1.7.3.jar"/>
 	<classpathentry kind="lib" path="/Users/xsznix/Programming/qHAC/lib/httpclientandroidlib-1.1.2.jar"/>
+	<classpathentry kind="lib" path="/Users/xsznix/bin/adt-bundle-mac-x86_64/sdk/platforms/android-18/android.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java 1.7"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
