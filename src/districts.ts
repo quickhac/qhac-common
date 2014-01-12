@@ -53,6 +53,13 @@ module Districts {
 				makeQuery: (hash : string, state : ASPNETPageState) => ({
 					data : hash
 				})
+			},
+			parseStudentInfo: ($dom : HTMLElement, id : string) => {
+				return {
+					name: $dom.findClass('StudentName')[0].innerText,
+					school: $dom.find('.StudentHeader')[0].innerText.match(/\((.*)\)/)[1],
+					id: id
+				};
 			}
 		}
 	}
@@ -119,7 +126,17 @@ module Districts {
 				makeQuery: (hash : string, state : ASPNETPageState) => ({
 					data: hash
 				})
-			}
+			},
+			parseStudentInfo: ($dom : HTMLElement, id : string) => ({
+				name: $dom.findClass('StudentName')[0].innerText,
+				school: $dom.findClass('DistrictName')[0]
+					// DistrictName contains the school name in a span
+					.findTag('span')[0].innerText.
+					// The school name is given in the format "018 - LASA High School".
+					// Frankly, we don't care about the number, so we chop it off.
+					split('-')[1].substr(1),
+				id: id
+			})
 		}
 	}
 	

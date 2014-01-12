@@ -295,4 +295,11 @@ module GradeParser {
 			categories: $categories.pmap(catNames.toArray(), (c, n) => parseCategory(district, n, c, courseId))
 		}
 	}
+
+	// only call this function on the grades page
+	export function parseStudentInfo(district : District, doc : string, id : string) {
+		var $dom = document.createElement('div');
+		$dom.innerHTML = doc;
+		return district.api.parseStudentInfo($dom, id);
+	}
 }

@@ -52,6 +52,12 @@ interface Assignment {
 	extraCredit: boolean;
 }
 
+interface StudentInfo {
+	name: string;
+	school: string;
+	id: string;
+} // TODO: replace DisambiguationOption with StudentInfo
+
 // District interop
 
 interface District {
@@ -71,6 +77,7 @@ interface GradeAPI {
 	disambiguate: DisambiguateLoader;
 	grades: GradeLoader;
 	classGrades: ClassGradeLoader;
+	parseStudentInfo: (dom : HTMLElement, id : string) => StudentInfo;
 }
 
 interface LoginLoader {
