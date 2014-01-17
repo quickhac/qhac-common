@@ -7,8 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import android.os.AsyncTask;
-
 import ch.boye.httpclientandroidlib.Consts;
 import ch.boye.httpclientandroidlib.HttpEntity;
 import ch.boye.httpclientandroidlib.HttpRequest;
@@ -97,39 +95,31 @@ public final class XHR {
 			}
 		}
 		
-		// perform the request asynchronously
-		new AsyncTask<Void, Void, Void>() {
-			@Override
-			protected Void doInBackground(Void... arg0) {
-				// execute the request and try to get a response
-				final HttpResponse response;
-				try {
-					response = client.execute(req);
-				} catch (ClientProtocolException e) {
-					cb.onFailure(e);
-					return null;
-				} catch (IOException e) {
-					cb.onFailure(e);
-					return null;
-				}
-				
-				// process the response
-				final HttpEntity responseEntity = response.getEntity();
-				final String responseString;
-				try {
-					responseString = EntityUtils.toString(responseEntity);
-				} catch (ParseException e) {
-					cb.onFailure(e);
-					return null;
-				} catch (IOException e) {
-					cb.onFailure(e);
-					return null;
-				}
-				cb.onSuccess(responseString);
-				
-				return null;
-			}
-		}.execute();
+		// execute the request and try to get a response
+		final HttpResponse response;
+		try {
+			response = client.execute(req);
+		} catch (ClientProtocolException e) {
+			cb.onFailure(e);
+			return;
+		} catch (IOException e) {
+			cb.onFailure(e);
+			return;
+		}
+		
+		// process the response
+		final HttpEntity responseEntity = response.getEntity();
+		final String responseString;
+		try {
+			responseString = EntityUtils.toString(responseEntity);
+		} catch (ParseException e) {
+			cb.onFailure(e);
+			return;
+		} catch (IOException e) {
+			cb.onFailure(e);
+			return;
+		}
+		cb.onSuccess(responseString);
 	}
 	
 	public static class RedirectStrategy extends DefaultRedirectStrategy {            
