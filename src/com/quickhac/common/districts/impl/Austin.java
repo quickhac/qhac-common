@@ -7,7 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.quickhac.common.data.DisambiguationChoice;
+import com.quickhac.common.data.StudentInfo;
 import com.quickhac.common.districts.GradeSpeedDistrict;
 import com.quickhac.common.http.ASPNETPageState;
 
@@ -65,17 +65,17 @@ public class Austin extends GradeSpeedDistrict {
 		return query;
 	}
 	@Override
-	public DisambiguationChoice[] getDisambiguationChoices(Document doc) {
+	public StudentInfo[] getDisambiguationChoices(Document doc) {
 		// find the students table
 		final Elements students = doc.select("#_ctl0_ddlStudents option");
-		final DisambiguationChoice[] choices = new DisambiguationChoice[students.size()];
+		final StudentInfo[] choices = new StudentInfo[students.size()];
 		
 		// parse each student
 		final Iterator<Element> studentIterator = students.iterator();
 		int i = 0;
 		while (studentIterator.hasNext()) {
 			final Element studentElem = studentIterator.next();
-			final DisambiguationChoice choice = new DisambiguationChoice();
+			final StudentInfo choice = new StudentInfo();
 			
 			choice.name = studentElem.text();
 			choice.id = studentElem.attr("value");
@@ -148,8 +148,21 @@ public class Austin extends GradeSpeedDistrict {
 	}
 	
 	@Override
-	public boolean isValidOutput(Document doc) {
+	public boolean isValidOutput(final Document doc) {
 		return doc.text().contains("Log Out");
+	}
+	
+	@Override
+	public StudentInfo parseStudentInfo(final Document doc) {
+		final StudentInfo info = new StudentInfo();
+		info.name = doc.getElementsByClass("StudentName").first().text();
+		info.school = doc.getElementsByClass("DistrictName").first()
+				// DistrictName contains the school name in a span
+				.getElementsByTag("span").text()
+				// The school name is given in the format "018 - LASA High School".
+				// Frankly, we don't care about the number, so we chop it off.
+				.split("-")[1].substring(1);
+		return info;
 	}
 
 }

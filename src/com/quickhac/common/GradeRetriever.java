@@ -6,7 +6,7 @@ import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.quickhac.common.data.DisambiguationChoice;
+import com.quickhac.common.data.StudentInfo;
 import com.quickhac.common.districts.GradeSpeedDistrict;
 import com.quickhac.common.http.ASPNETPageState;
 import com.quickhac.common.http.VerifiedHttpClientFactory;
@@ -44,7 +44,7 @@ public class GradeRetriever {
 				final ASPNETPageState state = ASPNETPageState.parse(doc);
 				
 				if (district.requiresDisambiguation(doc)) {
-					final DisambiguationChoice[] choices = district.getDisambiguationChoices(doc);
+					final StudentInfo[] choices = district.getDisambiguationChoices(doc);
 					handler.onRequiresDisambiguation(response, choices, state);
 				} else handler.onDoesNotRequireDisambiguation(response);
 			}
@@ -123,7 +123,7 @@ public class GradeRetriever {
 	}
 	
 	public static abstract class LoginResponseHandler {
-		public abstract void onRequiresDisambiguation(String response, DisambiguationChoice[] students, ASPNETPageState state);
+		public abstract void onRequiresDisambiguation(String response, StudentInfo[] students, ASPNETPageState state);
 		public abstract void onDoesNotRequireDisambiguation(String response);
 		public abstract void onFailure(Exception e);
 	}

@@ -9,7 +9,7 @@ import com.quickhac.common.GradeParser;
 import com.quickhac.common.GradeRetriever;
 import com.quickhac.common.data.ClassGrades;
 import com.quickhac.common.data.Course;
-import com.quickhac.common.data.DisambiguationChoice;
+import com.quickhac.common.data.StudentInfo;
 import com.quickhac.common.districts.GradeSpeedDistrict;
 import com.quickhac.common.districts.impl.Austin;
 import com.quickhac.common.districts.impl.RoundRock;
@@ -41,6 +41,8 @@ public class Test {
 				System.out.println("Almost finished...");
 				@SuppressWarnings("unused")
 				Course[] courses = parser.parseAverages(response);
+				@SuppressWarnings("unused")
+				StudentInfo studentInfo = parser.parseStudentInfo(response);
 				System.out.println("Finished.");
 				
 				System.out.print("Class to load: ");
@@ -96,7 +98,7 @@ public class Test {
 		final GradeRetriever.LoginResponseHandler loginHandler = new GradeRetriever.LoginResponseHandler() {
 
 			@Override
-			public void onRequiresDisambiguation(String response, DisambiguationChoice[] choices, ASPNETPageState state) {
+			public void onRequiresDisambiguation(String response, StudentInfo[] choices, ASPNETPageState state) {
 				for (int i = 0; i < choices.length; i++)
 					System.out.println("Choice " + i + ": " + choices[i].name + ", " + choices[i].id);
 				System.out.print("Student ID: ");

@@ -9,7 +9,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.quickhac.common.data.DisambiguationChoice;
+import com.quickhac.common.data.StudentInfo;
 import com.quickhac.common.districts.GradeSpeedDistrict;
 import com.quickhac.common.http.ASPNETPageState;
 
@@ -17,6 +17,8 @@ public final class RoundRock extends GradeSpeedDistrict {
 	
 	static final Pattern STUDENT_ID_REGEX =
 			Pattern.compile("\\?student_id=(\\d+)");
+	static final Pattern SCHOOL_REGEX =
+			Pattern.compile("\\((.*)\\)");
 	
 	@Override
 	public String name() { return "Round Rock ISD"; }
@@ -41,17 +43,17 @@ public final class RoundRock extends GradeSpeedDistrict {
 	@Override
 	public String disambiguateMethod() { return "GET"; }
 	@Override
-	public DisambiguationChoice[] getDisambiguationChoices(Document doc) {
+	public StudentInfo[] getDisambiguationChoices(Document doc) {
 		// find the students table
 		final Elements students = doc.select("#ctl00_plnMain_dgStudents .ItemRow a, #ctl00_plnMain_dgStudents .AlternateItemRow a");
-		final DisambiguationChoice[] choices = new DisambiguationChoice[students.size()];
+		final StudentInfo[] choices = new StudentInfo[students.size()];
 		
 		// parse each student
 		final Iterator<Element> studentIterator = students.iterator();
 		int i = 0;
 		while (studentIterator.hasNext()) {
 			final Element studentElem = studentIterator.next();
-			final DisambiguationChoice choice = new DisambiguationChoice();
+			final StudentInfo choice = new StudentInfo();
 			
 			choice.name = studentElem.text();
 			
@@ -130,8 +132,20 @@ public final class RoundRock extends GradeSpeedDistrict {
 	}
 	
 	@Override
-	public boolean isValidOutput(Document doc) {
+	public boolean isValidOutput(final Document doc) {
 		return doc.text().contains("Log Out") || doc.getElementsByClass("DataTable").size() != 0;
+	}
+
+	@Override
+	public StudentInfo parseStudentInfo(final Document doc) {
+		final StudentInfo info = new StudentInfo();
+		info.name = doc.getElementsByClass("StudentName").first().text();
+		
+		final Matcher schoolMatcher = SCHOOL_REGEX.matcher(doc.getElementsByClass("StudentHeader").first().text());
+		if (schoolMatcher.find())
+			info.school = schoolMatcher.group(1);
+		
+		return info;
 	}
 
 }

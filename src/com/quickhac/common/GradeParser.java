@@ -130,6 +130,10 @@ public class GradeParser {
 		return grades;
 	}
 	
+	public StudentInfo parseStudentInfo(final String html) {
+		return district.parseStudentInfo(Jsoup.parse(html));
+	}
+	
 	Course parseCourse(final Element $row, final SemesterParams semParams) {
 		// find the cells in this row
 		final Elements $cells = $row.getElementsByTag("td");
