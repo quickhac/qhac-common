@@ -128,5 +128,10 @@ public final class RoundRock extends GradeSpeedDistrict {
 		query.put("data", hash);
 		return query;
 	}
+	
+	@Override
+	public boolean isValidOutput(Document doc) {
+		return doc.text().contains("Log Out") || doc.getElementsByClass("DataTable").size() != 0;
+	}
 
 }

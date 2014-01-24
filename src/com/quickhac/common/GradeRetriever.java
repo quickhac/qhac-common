@@ -36,6 +36,11 @@ public class GradeRetriever {
 			@Override
 			public void onSuccess(String response) {
 				final Document doc = Jsoup.parse(response);
+				if (!district.isValidOutput(doc)) {
+					handler.onFailure(new Exception("Invalid GradeSpeed output."));
+					return;
+				}
+				
 				final ASPNETPageState state = ASPNETPageState.parse(doc);
 				
 				if (district.requiresDisambiguation(doc)) {
@@ -74,11 +79,11 @@ public class GradeRetriever {
 	public void disambiguate(final String studentId, final ASPNETPageState state, final XHR.ResponseHandler handler) {
 		HashMap<String, String> query = district.makeDisambiguateQuery(studentId, state);
 		
-		XHR.send(client, district.disambiguateMethod(), district.disambiguateURL(), query, handler);
+		XHR.send(client, district.disambiguateMethod(), district.disambiguateURL(), query, makeValidatedHandler(handler));
 	}
 	
 	public void getAverages(final XHR.ResponseHandler handler) {
-		XHR.send(client, district.gradesMethod(), district.gradesURL(), null, handler);
+		XHR.send(client, district.gradesMethod(), district.gradesURL(), null, makeValidatedHandler(handler));
 	}
 	
 	public void getCycle(final String urlHash, final Document gradesPage, final XHR.ResponseHandler handler) {
@@ -92,7 +97,29 @@ public class GradeRetriever {
 				state = ASPNETPageState.parse(gradesPage);
 		
 		final HashMap<String, String> query = district.makeCycleQuery(urlHash, state);
-		XHR.send(client, district.cycleMethod(), district.cycleURL(), query, handler);
+		XHR.send(client, district.cycleMethod(), district.cycleURL(), query, makeValidatedHandler(handler));
+	}
+	
+	private XHR.ResponseHandler makeValidatedHandler(final XHR.ResponseHandler handler) {
+		return new XHR.ResponseHandler() {
+
+			@Override
+			public void onSuccess(String response) {
+				Document doc = Jsoup.parse(response);
+				if (!district.isValidOutput(doc)) {
+					handler.onFailure(new Exception("Invalid GradeSpeed output."));
+					return;
+				}
+				
+				handler.onSuccess(response);
+			}
+
+			@Override
+			public void onFailure(Exception e) {
+				handler.onFailure(e);
+			}
+			
+		};
 	}
 	
 	public static abstract class LoginResponseHandler {

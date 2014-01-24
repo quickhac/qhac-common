@@ -146,5 +146,10 @@ public class Austin extends GradeSpeedDistrict {
 	public boolean cycleGradesRequiresAveragesLoaded() {
 		return false;
 	}
+	
+	@Override
+	public boolean isValidOutput(Document doc) {
+		return doc.text().contains("Log Out");
+	}
 
 }
