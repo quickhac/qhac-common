@@ -8,6 +8,7 @@ import org.jsoup.nodes.Document;
 
 import com.quickhac.common.data.StudentInfo;
 import com.quickhac.common.districts.GradeSpeedDistrict;
+import com.quickhac.common.err.InvalidGradeSpeedOutputException;
 import com.quickhac.common.http.ASPNETPageState;
 import com.quickhac.common.http.VerifiedHttpClientFactory;
 import com.quickhac.common.http.XHR;
@@ -37,7 +38,7 @@ public class GradeRetriever {
 			public void onSuccess(String response) {
 				final Document doc = Jsoup.parse(response);
 				if (!district.isValidOutput(doc)) {
-					handler.onFailure(new Exception("Invalid GradeSpeed output."));
+					handler.onFailure(new InvalidGradeSpeedOutputException());
 					return;
 				}
 				
@@ -107,7 +108,7 @@ public class GradeRetriever {
 			public void onSuccess(String response) {
 				Document doc = Jsoup.parse(response);
 				if (!district.isValidOutput(doc)) {
-					handler.onFailure(new Exception("Invalid GradeSpeed output."));
+					handler.onFailure(new InvalidGradeSpeedOutputException());
 					return;
 				}
 				
