@@ -231,7 +231,7 @@ public class GradeParser {
 				examGrade = GradeValue.parse($exam.text());
 		} else {
 			examGrade.type = GradeValue.TYPE_NONE;
-			examGrade.value = GradeValue.VALUE_NONE;
+			examGrade.value = GradeValue.VALUE_NOT_APPLICABLE;
 		}
 		
 		// return a semester
@@ -250,7 +250,7 @@ public class GradeParser {
 		} else {
 			GradeValue semAvg = new GradeValue();
 			semAvg.type = GradeValue.TYPE_NONE;
-			semAvg.value = GradeValue.VALUE_NONE;
+			semAvg.value = GradeValue.VALUE_NOT_APPLICABLE;
 		}
 		
 		return semester;

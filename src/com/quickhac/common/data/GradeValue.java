@@ -12,6 +12,7 @@ public class GradeValue {
 	public static final int TYPE_DOUBLE = 2;
 	public static final int TYPE_LETTER = 3;
 	
+	public static final int VALUE_NOT_APPLICABLE = -3;
 	public static final int VALUE_EXEMPT = -2;
 	public static final int VALUE_NONE = -1;
 	
