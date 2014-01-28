@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import com.quickhac.common.data.Assignment;
 import com.quickhac.common.data.Category;
 import com.quickhac.common.data.ClassGrades;
+import com.quickhac.common.data.GradeValue;
 import com.quickhac.common.data.Semester;
 import com.quickhac.common.util.Numeric;
 
@@ -13,12 +14,12 @@ import com.quickhac.common.util.Numeric;
 // Make sure to handle nulls in your code when you call these functions.
 public class GradeCalc {
 	
-	public static Integer semesterAverage(Semester semester, int examWeight) {
+	public static GradeValue semesterAverage(Semester semester, int examWeight) {
 		// get a list of all cycle averages
 		final List<Double> cycles = new ArrayList<Double>(semester.cycles.length);
 		for (int i = 0; i < semester.cycles.length; i++)
-			if (semester.cycles[i].average != null)
-				cycles.add((double) semester.cycles[i].average);
+			if (semester.cycles[i].average != null && semester.cycles[i].average.type == GradeValue.TYPE_INTEGER)
+				cycles.add((double) semester.cycles[i].average.value);
 		
 		// weighted average accumulators
 		double weightedTotal = 0;
@@ -32,26 +33,31 @@ public class GradeCalc {
 				(100 - examWeight)
 				// multiply the total cycle weight by the proportion of cycles that we are
 				// including in the calculation
-				* cycles.size() / semester.cycles.length;
+				* cycles.size() / (semester.cycles.length == 0 ? 1 : semester.cycles.length);
 		if (cycleWeight > 0) {
 			weightedTotal += cycleAvg * cycleWeight;
 			weights += cycleWeight;
 		}
 		
 		// calculate the exam grade
-		if (!semester.examIsExempt && semester.examGrade != null && semester.examGrade != -1) {
-			weightedTotal += semester.examGrade * examWeight;
+		if (semester.examGrade != null && semester.examGrade.type == GradeValue.TYPE_INTEGER) {
+			weightedTotal += ((double) semester.examGrade.value) * examWeight;
 			weights += examWeight;
 		}
 		
 		// don't return anything if there is no semester average
-		if (weights == 0.0) return null;
+		if (weights == 0.0) {
+			GradeValue g = new GradeValue();
+			g.type = GradeValue.TYPE_NONE;
+			g.value = GradeValue.VALUE_NONE;
+			return g;
+		}
 		
 		// take the weighted average
-		return (int) Math.round(weightedTotal / weights);
+		return GradeValue.fromInt((int) Math.round(weightedTotal / weights));
 	}
 	
-	public static Integer cycleAverage(ClassGrades cycle) {
+	public static GradeValue cycleAverage(ClassGrades cycle) {
 		// get all categories with an average
 		final List<Category> filteredCategories = new ArrayList<Category>(cycle.categories.length);
 		for (int i = 0; i < cycle.categories.length; i++)
@@ -68,7 +74,12 @@ public class GradeCalc {
 		}
 		
 		// if there is no average, return nothing
-		if (weights == 0.0) return null;
+		if (weights == 0.0) {
+			GradeValue g = new GradeValue();
+			g.type = GradeValue.TYPE_NONE;
+			g.value = GradeValue.VALUE_NONE;
+			return g;
+		}
 		
 		// add any bonuses from each category, even ones that don't have an average
 		double bonus = 0;
@@ -76,7 +87,7 @@ public class GradeCalc {
 			bonus += cycle.categories[i].bonus;
 		
 		// return final average
-		return (int) Math.round(weightedTotal / weights + bonus);
+		return GradeValue.fromInt((int) Math.round(weightedTotal / weights + bonus));
 	}
 	
 	public static Double categoryAverage(Assignment[] assignments) {
@@ -86,6 +97,7 @@ public class GradeCalc {
 		for (int i = 0; i < assignments.length; i++)
 			if (!assignments[i].extraCredit &&
 					assignments[i].ptsEarned != null &&
+					assignments[i].ptsEarned.type == GradeValue.TYPE_DOUBLE &&
 					!assignments[i].note.contains("(Dropped)"))
 				filteredAssignments.add(assignments[i]);
 		
@@ -94,7 +106,7 @@ public class GradeCalc {
 		double weights = 0;
 		
 		for (Assignment a : filteredAssignments) {
-			weightedTotal += a.ptsEarned * 100 * a.weight / a.ptsPossible;
+			weightedTotal += a.ptsEarned.value_d * 100 * a.weight / a.ptsPossible;
 			weights += a.weight;
 		}
 		
@@ -111,13 +123,14 @@ public class GradeCalc {
 		final List<Assignment> ecAssignments = new ArrayList<Assignment>(assignments.length);
 		for (int i = 0; i < assignments.length; i++)
 			if (assignments[i].extraCredit &&
-					assignments[i].ptsEarned != null)
+					assignments[i].ptsEarned != null &&
+					assignments[i].ptsEarned.type == GradeValue.TYPE_DOUBLE)
 				ecAssignments.add(assignments[i]);
 		
 		// add up points earned
 		double total = 0;
 		for (Assignment a : ecAssignments)
-			total += a.ptsEarned;
+			total += a.ptsEarned.value_d;
 		
 		return total;
 	}

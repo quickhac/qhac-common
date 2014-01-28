@@ -9,6 +9,7 @@ import com.quickhac.common.GradeParser;
 import com.quickhac.common.GradeRetriever;
 import com.quickhac.common.data.ClassGrades;
 import com.quickhac.common.data.Course;
+import com.quickhac.common.data.GradeValue;
 import com.quickhac.common.data.StudentInfo;
 import com.quickhac.common.districts.GradeSpeedDistrict;
 import com.quickhac.common.districts.impl.Austin;
@@ -62,7 +63,7 @@ public class Test {
 						@SuppressWarnings("unused")
 						Double catAvg = GradeCalc.categoryAverage(grades.categories[0].assignments);
 						@SuppressWarnings("unused")
-						Integer cycAvg = GradeCalc.cycleAverage(grades);
+						GradeValue cycAvg = GradeCalc.cycleAverage(grades);
 						System.out.println("GradeCalc testing finished.");
 					}
 

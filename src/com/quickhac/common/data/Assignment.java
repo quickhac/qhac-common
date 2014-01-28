@@ -8,7 +8,7 @@ public class Assignment {
 	public String title;
 	public String dateAssigned;
 	public String dateDue;
-	public Double ptsEarned;
+	public GradeValue ptsEarned; // this should always be represented using a double
 	public double ptsPossible;
 	public double weight;
 	public String note;
@@ -20,7 +20,7 @@ public class Assignment {
 		
 		final StringBuilder pts = new StringBuilder();
 		
-		pts.append(Numeric.doubleToPrettyString(ptsEarned));
+		pts.append(Numeric.doubleToPrettyString(ptsEarned.value_d));
 		
 		if (ptsPossible != 100)
 			pts.append("/" + Numeric.doubleToPrettyString(ptsPossible));

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.quickhac.common.data.Course;
+import com.quickhac.common.data.GradeValue;
 import com.quickhac.common.util.Numeric;
 
 public class GPACalc {
@@ -26,8 +27,8 @@ public class GPACalc {
 		final LinkedList<Double> semGradePoints = new LinkedList<Double>();
 		for (int i = 0; i < courses.length; i++) 
 			for (int j = 0; j < courses[i].semesters.length; j++)
-				if (courses[i].semesters[j].average != null)
-					semGradePoints.add(gradePoint(courses[i].semesters[j].average, 0.0));
+				if (courses[i].semesters[j].average != null && courses[i].semesters[j].average.type == GradeValue.TYPE_INTEGER)
+					semGradePoints.add(gradePoint(courses[i].semesters[j].average.value, 0.0));
 		
 		// take the average
 		return Numeric.average(semGradePoints);
@@ -44,9 +45,9 @@ public class GPACalc {
 		final LinkedList<Double> semGradePoints = new LinkedList<Double>();
 		for (int i = 0; i < courses.length; i++)
 			for (int j = 0; j < courses[i].semesters.length; j++)
-				if (courses[i].semesters[j].average != null)
+				if (courses[i].semesters[j].average != null && courses[i].semesters[j].average.type == GradeValue.TYPE_INTEGER)
 					semGradePoints.add(
-							gradePoint(courses[i].semesters[j].average,
+							gradePoint(courses[i].semesters[j].average.value,
 							honors.contains(courses[i].title) ? 1.0 : 0.0 
 							) + offset);
 		

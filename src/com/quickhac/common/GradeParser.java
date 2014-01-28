@@ -34,6 +34,12 @@ public class GradeParser {
 	
 
 	static final Pattern NUMERIC_REGEX = Pattern.compile("(\\d+)");
+	static final Pattern CYCLE_HEADER_REGEX =
+			Pattern.compile("cycle (\\d+)", Pattern.CASE_INSENSITIVE);
+	static final Pattern EXAM_HEADER_REGEX =
+			Pattern.compile("exam (\\d+)", Pattern.CASE_INSENSITIVE);
+	static final Pattern SEMESTER_HEADER_REGEX =
+			Pattern.compile("semester (\\d+)", Pattern.CASE_INSENSITIVE);
 	static final Pattern GRADE_CELL_URL_REGEX =
 			Pattern.compile("\\?data=([\\w\\d%]*)");
 	
@@ -60,13 +66,38 @@ public class GradeParser {
 		// make semester parameters
 		final Elements $headerCells = $gradeTable.select("tr.TableHeader").first().getElementsByTag("th");
 		final SemesterParams semParams = new SemesterParams();
-		final Matcher semMatches = NUMERIC_REGEX.matcher($headerCells.last().text());
-		if (semMatches.find())
-			semParams.semesters = Integer.valueOf(semMatches.group(0));
-		final Matcher cycMatches = NUMERIC_REGEX.matcher($headerCells.get($headerCells.size() - 3).text());
-		if (cycMatches.find())
-			semParams.cyclesPerSemester = Integer.valueOf(cycMatches.group(0))
-					/ semParams.semesters;
+		
+		// parse through all cells to find parameters
+		Matcher cycleMatcher, examMatcher, semMatcher;
+		String text;
+		semParams.hasExams = false; semParams.hasSemesterAverages = false;
+		for (Element $cell : $headerCells) {
+			text = $cell.text();
+			
+			// "Cycle 1..6"
+			cycleMatcher = CYCLE_HEADER_REGEX.matcher(text);
+			if (cycleMatcher.matches()) {
+				semParams.cyclesPerSemester = Integer.valueOf(cycleMatcher.group(1));
+				continue;
+			}
+			
+			// "Exam 1..2" 
+			examMatcher = EXAM_HEADER_REGEX.matcher(text);
+			if (examMatcher.matches()) {
+				semParams.hasExams = true;
+				continue;
+			}
+			
+			// "Semester 1..2"
+			semMatcher = SEMESTER_HEADER_REGEX.matcher(text);
+			if (semMatcher.matches()) {
+				semParams.hasSemesterAverages = true;
+				semParams.semesters = Integer.valueOf(semMatcher.group(1));
+			}
+		}
+		
+		if (semParams.semesters == 0) semParams.semesters = 1;
+		semParams.cyclesPerSemester /= semParams.semesters;
 		
 		// find each course
 		final Elements $rows = $gradeTable.select("tr.DataRow, tr.DataRowAlt");
@@ -149,18 +180,31 @@ public class GradeParser {
 		final Semester[] semesters = new Semester[semParams.semesters];
 		for (int i = 0; i < semParams.semesters; i++) {
 			// get cells for the semester
-			final Element[] $semesterCells = new Element[semParams.cyclesPerSemester + 2];
-			// find the cells that are pertinent to this semester
-			// $semesterCells becomes [cycle, cycle, ... , cycle, exam, semester] after filtering
-			final int cellOffset = district.gradesColOffset() + i * (semParams.cyclesPerSemester + 2);
+			final Element[] $semesterCells = new Element[semParams.cyclesPerSemester];
+			final int cellOffset = district.gradesColOffset() +
+					i * (semParams.cyclesPerSemester + (semParams.hasExams ? 1 : 0)
+					+ (semParams.hasSemesterAverages ? 1 : 0));
+
+			// find the cycle cells for this semester
 			for (int j = 0; j < $semesterCells.length; j++)
 				$semesterCells[j] = $cells.get(cellOffset + j);
+			
+			// exam cell is after that
+			final Element $examCell = semParams.hasExams
+					? $cells.get(cellOffset + semParams.cyclesPerSemester)
+					: null;
+			
+			// and semester cell is after that
+			final Element $semAvgCell = semParams.hasSemesterAverages
+					? $cells.get(cellOffset + semParams.cyclesPerSemester + (semParams.hasExams ? 1 : 0))
+					: null;
+			
 			// parse the semester
-			semesters[i] = parseSemester($semesterCells, i, semParams);
+			semesters[i] = parseSemester($semesterCells, $examCell, $semAvgCell, i, semParams);
 		}
 		
 		// create the course
-		Course course = new Course();
+		final Course course = new Course();
 		course.title = $cells.get(district.titleColOffset()).text();
 		course.teacherName = $teacherCell.text();
 		course.teacherEmail = $teacherCell.attr("href").substring(7);
@@ -169,28 +213,46 @@ public class GradeParser {
 		return course;
 	}
 	
-	Semester parseSemester(Element[] $cells, int index, SemesterParams semParams) {
+	Semester parseSemester(Element[] $cycles, Element $exam, Element $semAvg, int index, SemesterParams semParams) {
 		// parse cycles
 		final Cycle[] cycles = new Cycle[semParams.cyclesPerSemester];
 		for (int i = 0; i < semParams.cyclesPerSemester; i++)
-			cycles[i] = parseCycle($cells[i], i);
+			cycles[i] = parseCycle($cycles[i], i);
 		
 		// parse exam grade
-		final Element $exam = $cells[semParams.cyclesPerSemester];
-		int examGrade = -1; boolean examIsExempt = false;
-		final String examText = $exam.text();
-		if (examText.equals("EX") || examText.equals("Exc"))
-			examIsExempt = true;
-		else if (examText.matches("\\d+"))
-			examGrade = Integer.valueOf($exam.text());
+		GradeValue examGrade = new GradeValue();
+		if (semParams.hasExams) {
+			final String examText = $exam.text();
+			if (examText.equals("EX") || examText.equals("Exc")) {
+				examGrade.type = GradeValue.TYPE_NONE;
+				examGrade.value = GradeValue.VALUE_EXEMPT;
+			}
+			else if (examText.matches("\\d+"))
+				examGrade = GradeValue.parse($exam.text());
+		} else {
+			examGrade.type = GradeValue.TYPE_NONE;
+			examGrade.value = GradeValue.VALUE_NONE;
+		}
 		
 		// return a semester
 		final Semester semester = new Semester();
 		semester.index = index;
 		semester.examGrade = examGrade;
-		semester.examIsExempt = examIsExempt;
 		semester.cycles = cycles;
-		semester.average = GradeCalc.semesterAverage(semester, district.examWeight());
+		
+		// calculate our own semester average unless using letter grades
+		if (semParams.hasSemesterAverages) {
+			GradeValue parsedSemAvg = GradeValue.parse($semAvg.text());
+			if (parsedSemAvg.type == GradeValue.TYPE_LETTER)
+				semester.average = parsedSemAvg;
+			else
+				semester.average = GradeCalc.semesterAverage(semester, district.examWeight());
+		} else {
+			GradeValue semAvg = new GradeValue();
+			semAvg.type = GradeValue.TYPE_NONE;
+			semAvg.value = GradeValue.VALUE_NONE;
+		}
+		
 		return semester;
 	}
 	
@@ -206,7 +268,7 @@ public class GradeParser {
 		}
 		
 		// find a grade
-		final int average = Integer.valueOf($link.first().text());
+		final GradeValue average = GradeValue.parse($link.first().text());
 		final Matcher urlHashMatcher = GRADE_CELL_URL_REGEX.matcher($link.first().attr("href"));
 		final String urlHash;
 		if (urlHashMatcher.find())
@@ -307,6 +369,16 @@ public class GradeParser {
 			weight = 1;
 		}
 		
+		// turn ptsEarnedNum into grade value
+		GradeValue grade = new GradeValue();
+		if (ptsEarnedNum == null) {
+			grade.type = GradeValue.TYPE_NONE;
+			grade.value = GradeValue.VALUE_NONE;
+		} else {
+			grade.type = GradeValue.TYPE_DOUBLE;
+			grade.value_d = ptsEarnedNum;
+		}
+		
 		// generate the assignment ID
 		final String assignmentId = Hash.SHA1(catId + '|' + title);
 		
@@ -325,7 +397,7 @@ public class GradeParser {
 		assignment.title = title;
 		assignment.dateDue = dateDue;
 		assignment.dateAssigned = dateAssigned;
-		assignment.ptsEarned = ptsEarnedNum;
+		assignment.ptsEarned = grade;
 		assignment.ptsPossible = ptsPossNum;
 		assignment.weight = weight;
 		assignment.note = note;
@@ -367,6 +439,8 @@ public class GradeParser {
 	class SemesterParams {
 		public int semesters;
 		public int cyclesPerSemester;
+		public boolean hasExams;
+		public boolean hasSemesterAverages;
 	}
 
 }
