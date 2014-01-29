@@ -39,7 +39,7 @@ public class GradeParser {
 	static final Pattern EXAM_HEADER_REGEX =
 			Pattern.compile("exam (\\d+)", Pattern.CASE_INSENSITIVE);
 	static final Pattern SEMESTER_HEADER_REGEX =
-			Pattern.compile("semester (\\d+)", Pattern.CASE_INSENSITIVE);
+			Pattern.compile("sem (\\d+)", Pattern.CASE_INSENSITIVE);
 	static final Pattern GRADE_CELL_URL_REGEX =
 			Pattern.compile("\\?data=([\\w\\d%]*)");
 	
