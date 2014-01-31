@@ -83,44 +83,47 @@ public class GradeValue {
 	public int value;
 	public double value_d;
 	
-	// static parser instantiator things
-	public static GradeValue parse(String grade) {
-		GradeValue g = new GradeValue();
-		
+	// constructors
+	public GradeValue() {
+		super();
+	}
+	
+	public GradeValue(String grade) {
 		try {
 			// try to read a integer grade
-			g.value = Integer.parseInt(grade);
-			g.type = TYPE_INTEGER;
+			value = Integer.parseInt(grade);
+			type = TYPE_INTEGER;
 		} catch (NumberFormatException e1) {
 			
 			try {
 				// try to read a double grade
-				g.value_d = Double.parseDouble(grade);
-				g.type = TYPE_DOUBLE;
+				value_d = Double.parseDouble(grade);
+				type = TYPE_DOUBLE;
 			} catch (NumberFormatException e2) {
 				
 				// if that fails, parse it as a letter grade
-				g.type = TYPE_LETTER;
+				type = TYPE_LETTER;
 				Integer val = letterToValue.get(grade);
 				
 				if (val == null) {
 					// if that fails as well, say it's not a grade
-					g.type = TYPE_NONE;
-					g.value = VALUE_NONE;
+					type = TYPE_NONE;
+					value = VALUE_NONE;
 				} else {
-					g.value = val;
+					value = val;
 				}
 			}
 		}
-		
-		return g;
 	}
 	
-	public static GradeValue fromInt(int grade) {
-		GradeValue g = new GradeValue();
-		g.value = grade;
-		g.type = TYPE_INTEGER;
-		return g;
+	public GradeValue(int grade) {
+		value = grade;
+		type = TYPE_INTEGER;
+	}
+	
+	public GradeValue(double grade) {
+		value_d = grade;
+		type = TYPE_DOUBLE;
 	}
 	
 	// converters

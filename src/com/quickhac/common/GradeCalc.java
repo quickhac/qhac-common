@@ -54,7 +54,7 @@ public class GradeCalc {
 		}
 		
 		// take the weighted average
-		return GradeValue.fromInt((int) Math.round(weightedTotal / weights));
+		return new GradeValue((int) Math.round(weightedTotal / weights));
 	}
 	
 	public static GradeValue cycleAverage(ClassGrades cycle) {
@@ -87,7 +87,7 @@ public class GradeCalc {
 			bonus += cycle.categories[i].bonus;
 		
 		// return final average
-		return GradeValue.fromInt((int) Math.round(weightedTotal / weights + bonus));
+		return new GradeValue((int) Math.round(weightedTotal / weights + bonus));
 	}
 	
 	public static Double categoryAverage(Assignment[] assignments) {

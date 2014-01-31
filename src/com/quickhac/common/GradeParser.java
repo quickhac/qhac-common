@@ -228,7 +228,7 @@ public class GradeParser {
 				examGrade.value = GradeValue.VALUE_EXEMPT;
 			}
 			else if (examText.matches("\\d+"))
-				examGrade = GradeValue.parse($exam.text());
+				examGrade = new GradeValue($exam.text());
 		} else {
 			examGrade.type = GradeValue.TYPE_NONE;
 			examGrade.value = GradeValue.VALUE_NOT_APPLICABLE;
@@ -242,7 +242,7 @@ public class GradeParser {
 		
 		// calculate our own semester average unless using letter grades
 		if (semParams.hasSemesterAverages) {
-			GradeValue parsedSemAvg = GradeValue.parse($semAvg.text());
+			GradeValue parsedSemAvg = new GradeValue($semAvg.text());
 			if (parsedSemAvg.type == GradeValue.TYPE_LETTER)
 				semester.average = parsedSemAvg;
 			else
@@ -268,7 +268,7 @@ public class GradeParser {
 		}
 		
 		// find a grade
-		final GradeValue average = GradeValue.parse($link.first().text());
+		final GradeValue average = new GradeValue($link.first().text());
 		final Matcher urlHashMatcher = GRADE_CELL_URL_REGEX.matcher($link.first().attr("href"));
 		final String urlHash;
 		if (urlHashMatcher.find())
@@ -369,14 +369,12 @@ public class GradeParser {
 			weight = 1;
 		}
 		
-		// turn ptsEarnedNum into grade value
-		GradeValue grade = new GradeValue();
+		// turn points earned into grade value
+		final GradeValue grade;
 		if (ptsEarnedNum == null) {
-			grade.type = GradeValue.TYPE_NONE;
-			grade.value = GradeValue.VALUE_NONE;
+			grade = new GradeValue(ptsEarned);
 		} else {
-			grade.type = GradeValue.TYPE_DOUBLE;
-			grade.value_d = ptsEarnedNum;
+			grade = new GradeValue(ptsEarnedNum);
 		}
 		
 		// generate the assignment ID
