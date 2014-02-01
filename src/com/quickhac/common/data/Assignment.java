@@ -18,6 +18,11 @@ public class Assignment {
 		if (ptsEarned == null)
 			return "-";
 		
+		// letter grades + weighted/non-100 = ????
+		// don't even bother handling that case
+		if (ptsEarned.type == GradeValue.TYPE_LETTER)
+			return ptsEarned.toString();
+		
 		final StringBuilder pts = new StringBuilder();
 		
 		pts.append(Numeric.doubleToPrettyString(ptsEarned.value_d));
