@@ -16,35 +16,39 @@ module Districts {
 		classGradesRequiresAverageLoaded: true,
 		api: {
 			login: {
-				url: 'https://accesscenter.roundrockisd.org/homeaccess/default.aspx',
+				url: 'https://accesscenter.roundrockisd.org/HomeAccess/Account/LogOn?ReturnUrl=%2fhomeaccess%2f',
 				method: 'GET',
 				makeQuery: (u : string, p : string, state : ASPNETPageState) => ({
-					'__VIEWSTATE': state.viewstate,
-					'__EVENTVALIDATION': state.eventvalidation,
-					'ctl00$plnMain$txtLogin': u,
-					'ctl00$plnMain$txtPassword': p,
-					'__EVENTTARGET': null,
-					'__EVENTARGUMENT': null,
-					'ctl00$strHiddenPageTitle': null,
-					'ctl00$plnMain$Submit1': 'Log In'
+					'Database': 10,
+					'LogOnDetails.UserName': u,
+					'LogOnDetails.Password': p
 				})
 			},
 			disambiguate: {
-				url: 'https://accesscenter.roundrockisd.org/homeaccess/Student/DailySummary.aspx',
-				method: 'GET',
-				isRequired: (dom : HTMLElement) => !!dom.find('#ctl00_plnMain_dgStudents').length,
+				url: 'https://accesscenter.roundrockisd.org/HomeAccess/Frame/StudentPicker',
+				method: 'POST',
+				pickerLoadsFromAjax: true,
+				isRequired: (dom : HTMLElement) => {
+					var buttons : Node[] = dom.find('.sg-button').toArray();
+					var len : number = buttons.length;
+					for (var i = 0; i < len; i++)
+						if (buttons[i].innerText.indexOf('Change Student') !== -1)
+							return true;
+					return false;
+				},
 				makeQuery: (id : string, state : ASPNETPageState) => ({
-					'student_id': id
+					'studentId': 113779,
+					'url': '/HomeAccess/Home/WeekView'
 				}),
 				getDisambiguationChoices: ((dom : HTMLElement) =>
-					dom.find('#ctl00_plnMain_dgStudents .ItemRow a, #ctl00_plnMain_dgStudents .AlternateItemRow a')
-					.map((a : HTMLElement) => ({
-						name: a.innerText,
-						id: a.attr('href').match(/\?student_id=(\d+)/)[1]
+					dom.find('.sg-student-picker-row')
+					.map((i : HTMLElement) => ({
+						name: i.find('.sg-picker-student-name')[0].innerText,
+						id: (<HTMLInputElement> i.find('input[name=studentId]')[0]).value
 					})))
 			},
 			grades: {
-				url: 'https://accesscenter.roundrockisd.org/homeaccess/Student/Gradespeed.aspx?target=https://gradebook.roundrockisd.org/pc/displaygrades.aspx',
+				url: 'https://accesscenter.roundrockisd.org/HomeAccess/content/student/gradespeed.aspx?target=https://gradebook.roundrockisd.org/pc/displaygrades.aspx',
 				method: 'GET'
 			},
 			classGrades: {
@@ -96,6 +100,7 @@ module Districts {
 			disambiguate: {
 				url: 'https://gradespeed.austinisd.org/pc/ParentMain.aspx',
 				method: 'POST',
+				pickerLoadsFromAjax: false,
 				isRequired: (dom : HTMLElement) => !!dom.find('#_ctl0_ddlStudents').length,
 				makeQuery: (id : string, state : ASPNETPageState) => ({
 					'__EVENTTARGET': '_ctl0$ddlStudents',

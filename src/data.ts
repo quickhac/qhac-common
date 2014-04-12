@@ -89,7 +89,9 @@ interface LoginLoader {
 
 interface DisambiguateLoader {
 	url: string;
-	method: string; // GET or POST?
+	method: string; // GET or POST? A picker is always loaded using a GET request.
+	// requires that an AJAX call be made to retrieve disambiguation choices
+	pickerLoadsFromAjax: boolean;
 	// checks if disambiguation is required given the DOM of the page returned after login
 	isRequired: (dom : HTMLElement) => boolean;
 	// create parameter object to pass to GradeSpeed/txConnect

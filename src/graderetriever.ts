@@ -67,8 +67,21 @@ module GradeRetriever {
 			// only return choices if there are any; the success callback should
 			// detect whether the disambiguation choices array is null or not.
 			if (district.api.disambiguate.isRequired($dom)) {
-				var choices = district.api.disambiguate.getDisambiguationChoices($dom);
-				XHR._maybeCall(success, null, [doc, $dom, choices, state])
+				// if the disambiguation choices load from a separate picker, load that picker first.
+				if (district.api.disambiguate.pickerLoadsFromAjax) {
+					new XHR('GET', district.api.disambiguate.url)
+						.success((doc : string) => {
+							var $dom = document.createElement('div');
+							$dom.innerHTML = doc;
+							var choices = district.api.disambiguate.getDisambiguationChoices($dom);
+							XHR._maybeCall(success, null, [doc, $dom, choices, state]);
+						})
+						.fail(fail)
+						.send();
+				} else {
+					var choices = district.api.disambiguate.getDisambiguationChoices($dom);
+					XHR._maybeCall(success, null, [doc, $dom, choices, state])
+				}
 			} else {
 				XHR._maybeCall(success, null, [doc, $dom, null, state]);
 			}
