@@ -37,7 +37,7 @@ module Districts {
 					return false;
 				},
 				makeQuery: (id : string, state : ASPNETPageState) => ({
-					'studentId': 113779,
+					'studentId': id,
 					'url': '/HomeAccess/Home/WeekView'
 				}),
 				getDisambiguationChoices: ((dom : HTMLElement) =>
