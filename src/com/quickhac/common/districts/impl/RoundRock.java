@@ -31,21 +31,21 @@ public final class RoundRock extends GradeSpeedDistrict {
 
 	@Override
 	public String loginURL() {
-		return "https://accesscenter.roundrockisd.org/homeaccess/default.aspx";
+		return "https://accesscenter.roundrockisd.org/HomeAccess/Account/LogOn?ReturnUrl=%2fhomeaccess%2f";
 	}
 	@Override
 	public String loginMethod() { return "POST"; }
 
 	@Override
 	public String disambiguateURL() {
-		return "https://accesscenter.roundrockisd.org/homeaccess/Student/DailySummary.aspx";
+		return "https://accesscenter.roundrockisd.org/HomeAccess/Frame/StudentPicker";
 	}
 	@Override
-	public String disambiguateMethod() { return "GET"; }
+	public String disambiguateMethod() { return "POST"; }
 	@Override
 	public StudentInfo[] getDisambiguationChoices(Document doc) {
 		// find the students table
-		final Elements students = doc.select("#ctl00_plnMain_dgStudents .ItemRow a, #ctl00_plnMain_dgStudents .AlternateItemRow a");
+		final Elements students = doc.getElementsByClass("sg-student-picker-row");
 		final StudentInfo[] choices = new StudentInfo[students.size()];
 		
 		// parse each student
@@ -55,11 +55,8 @@ public final class RoundRock extends GradeSpeedDistrict {
 			final Element studentElem = studentIterator.next();
 			final StudentInfo choice = new StudentInfo();
 			
-			choice.name = studentElem.text();
-			
-			final Matcher idMatcher = STUDENT_ID_REGEX.matcher(studentElem.attr("href"));
-			if (idMatcher.find())
-				choice.id = idMatcher.group(1);
+			choice.name = studentElem.getElementsByClass("sg-picker-student-name").first().text();
+			choice.id = studentElem.select("input[name=studentId]").first().val();
 			
 			choices[i] = choice;
 			i++;
@@ -70,7 +67,7 @@ public final class RoundRock extends GradeSpeedDistrict {
 
 	@Override
 	public String gradesURL() {
-		return "https://accesscenter.roundrockisd.org/homeaccess/Student/Gradespeed.aspx?target=https://gradebook.roundrockisd.org/pc/displaygrades.aspx";
+		return "https://accesscenter.roundrockisd.org/HomeAccess/content/student/gradespeed.aspx?target=https://gradebook.roundrockisd.org/pc/displaygrades.aspx";
 	}
 	@Override
 	public String gradesMethod() { return "GET"; }
@@ -93,27 +90,30 @@ public final class RoundRock extends GradeSpeedDistrict {
 	public HashMap<String, String> makeLoginQuery(String user, String pass,
 			ASPNETPageState state) {
 		HashMap<String, String> query = new HashMap<String, String>();
-		query.put("__VIEWSTATE", state.viewstate);
-		query.put("__EVENTVALIDATION", state.eventvalidation);
-		query.put("ctl00$plnMain$txtLogin", user);
-		query.put("ctl00$plnMain$txtPassword", pass);
-		query.put("__EVENTTARGET", "");
-		query.put("__EVENTARGUMENT", "");
-		query.put("ctl00$strHiddenPageTitle", "");
-		query.put("ctl00$plnMain$Submit1", "Log In");
+		query.put("Database", "10");
+		query.put("LogOnDetails.UserName", user);
+		query.put("LogOnDetails.Password", pass);
 		return query;
 	}
 	
 	@Override
 	public boolean requiresDisambiguation(Document doc) {
-		return doc.getElementById("ctl00_plnMain_dgStudents") != null;
+		final Elements buttons = doc.getElementsByClass("sg-button");
+		for (Element button : buttons)
+			if (button.text().indexOf("Change Student") != -1)
+				return true;
+		return false;
 	}
+	
+	@Override
+	public boolean disambiguatePickerLoadsFromAjax() { return true; }
 	
 	@Override
 	public HashMap<String, String> makeDisambiguateQuery(String id,
 			ASPNETPageState state) {
 		HashMap<String, String> query = new HashMap<String, String>();
-		query.put("student_id", id);
+		query.put("studentId", id);
+		query.put("url", "/HomeAccess/Home/WeekView");
 		return query;
 	}
 
@@ -133,7 +133,7 @@ public final class RoundRock extends GradeSpeedDistrict {
 	
 	@Override
 	public boolean isValidOutput(final Document doc) {
-		return doc.text().contains("Log Out") || doc.getElementsByClass("DataTable").size() != 0;
+		return doc.text().contains("Logoff") || doc.getElementsByClass("DataTable").size() != 0;
 	}
 
 	@Override

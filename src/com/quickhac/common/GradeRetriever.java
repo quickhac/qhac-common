@@ -45,8 +45,28 @@ public class GradeRetriever {
 				final ASPNETPageState state = ASPNETPageState.parse(doc);
 				
 				if (district.requiresDisambiguation(doc)) {
-					final StudentInfo[] choices = district.getDisambiguationChoices(doc);
-					handler.onRequiresDisambiguation(response, choices, state);
+					
+					// load the picker if necessary
+					if (district.disambiguatePickerLoadsFromAjax()) {
+						final XHR.ResponseHandler pickerLoaded = new XHR.ResponseHandler() {
+							@Override
+							public void onSuccess(String response) {
+								final Document doc = Jsoup.parse(response);
+								// don't check for valid GradeSpeed output
+								final StudentInfo[] choices = district.getDisambiguationChoices(doc);
+								handler.onRequiresDisambiguation(response, choices, state);
+							}
+							@Override
+							public void onFailure(Exception e) {
+								handler.onFailure(e);
+							}
+						};
+						XHR.send(client, "GET", district.disambiguateURL(), null, pickerLoaded);
+					} else {
+						final StudentInfo[] choices = district.getDisambiguationChoices(doc);
+						handler.onRequiresDisambiguation(response, choices, state);
+					}
+					
 				} else handler.onDoesNotRequireDisambiguation(response);
 			}
 

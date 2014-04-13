@@ -42,6 +42,8 @@ public class Austin extends GradeSpeedDistrict {
 		return doc.getElementById("_ctl0_ddlStudents") != null;
 	}
 	@Override
+	public boolean disambiguatePickerLoadsFromAjax() { return false; }
+	@Override
 	public String disambiguateURL() {
 		return "https://gradespeed.austinisd.org/pc/ParentMain.aspx";
 	}

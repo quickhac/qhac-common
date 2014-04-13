@@ -16,6 +16,7 @@ public abstract class GradeSpeedDistrict extends District {
 			String pass, ASPNETPageState state);
 	
 	public abstract boolean requiresDisambiguation(Document doc);
+	public abstract boolean disambiguatePickerLoadsFromAjax();
 	public abstract String disambiguateURL();
 	public abstract String disambiguateMethod();
 	public abstract HashMap<String, String> makeDisambiguateQuery(String id,
