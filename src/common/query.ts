@@ -37,12 +37,15 @@ interface NodeList {
 }
 
 HTMLElement.prototype.find = HTMLElement.prototype.querySelectorAll;
+Document.prototype.find = Document.prototype.querySelectorAll;
 
 HTMLElement.prototype.attr = HTMLElement.prototype.getAttribute;
 
 HTMLElement.prototype.findClass = HTMLElement.prototype.getElementsByClassName;
+Document.prototype.findClass = Document.prototype.getElementsByClassName;
 
 HTMLElement.prototype.findTag = HTMLElement.prototype.getElementsByTagName;
+Document.prototype.findTag = Document.prototype.getElementsByTagName;
 
 // use Sizzle if necessary
 if (typeof HTMLElement.prototype.querySelectorAll === 'undefined' && typeof Sizzle !== 'undefined') {

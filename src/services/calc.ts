@@ -1,24 +1,32 @@
-/// <reference path='data.ts'/>
-/// <reference path='qmath.ts'/>
-
-module GradeCalc {
+class Calculator {
+    
+    district: District;
+    
+    constructor(district: District) {
+        this.district = district;
+    }
+    
+    setDistrict(district: District): void {
+        this.district = district;
+    }
 
 	/** Calculates a semester average from the cycles and exam grade provided */
-	export function semesterAverage(district : District, semester : Semester) : number {
+	semesterAverage(semester: Semester): number {
 		// get a list of all cycle averages by mapping arrays and crazy stuff like that
-		var cycles : number[] = semester.cycles.map(c => c.average).numerics();
+		var cycles: number[] = semester.cycles.map(c => c.average).numerics();
 
-		var cycleAvg : number,
-		    cycleWeight : number,
-		    examGrade : number,
-		    examWeight : number;
+		var cycleAvg: number,
+		    cycleWeight: number,
+		    examGrade: number,
+		    examWeight: number;
 
 		// calculate the cycle grades
 		cycleAvg = cycles.average();
 		cycleWeight =
 			// total cycle weight + exam weight = 100, therefore
 			// total cycle weight = 100 - exam weight
-			(100 - district.examWeight)
+            // but we multiply by 3 to avoid floating point roundoff
+			(300 - this.district.examWeight * 3)
 			// multiply the total cycle weight by the proportion of cycles that we are
 			// including in the calculation
 			* cycles.length / semester.cycles.length;
@@ -28,7 +36,7 @@ module GradeCalc {
 			examGrade = semester.examGrade;
 			// set the weight to NaN to ensure weighted average doesn't complain about
 			// array length mismatch if there is no exam grade
-			examWeight = actuallyIsNaN(examGrade) ? NaN : district.examWeight;
+			examWeight = actuallyIsNaN(examGrade) ? NaN : this.district.examWeight * 3;
 		}
 
 		// take the weighted average of cycle and exam
@@ -37,7 +45,7 @@ module GradeCalc {
 
 	/** Calculates a cycle average given a ClassGrades object. Reads the category average
 	    and bonus by category. */
-	export function cycleAverage(grades : ClassGrades) : number {
+	cycleAverage(grades: Cycle): number {
 		var filteredCategories = grades.categories.filter(c => !actuallyIsNaN(c.average));
 
 		return + // if 'return' is on a line by itself, TypeScript will append a semicolon
@@ -50,7 +58,7 @@ module GradeCalc {
 	}
 
 	/** Calculates a category average from a list of assignments */
-	export function categoryAverage(assignments : Assignment[]) : number {
+	categoryAverage(assignments: Assignment[]): number {
 		var filteredAssignments = assignments.filter(
 			// exclude extra credit assignments
 			a => !a.extraCredit &&
@@ -69,7 +77,7 @@ module GradeCalc {
 
 	/** Calculates the total bonus from extra credit assignments in a category to
 	    add to the class grade average. */
-	export function categoryBonuses(assignments : Assignment[]) : number {
+	categoryBonuses(assignments: Assignment[]): number {
 		// include only extra credit assignments with a grade entered
 		var ecAssignments = assignments.filter(a => a.extraCredit && !actuallyIsNaN(a.ptsEarned));
 

@@ -1,10 +1,11 @@
-interface Array {
-	numerics() : any[];
-	sum() : number;
-	average() : number;
-	pmap(otherArray : any[], f : (x : any, y : any) => any) : any;
-	weightedAverage(otherArray : any[]) : number;
-	flatten() : any[];
+interface Array<T> {
+	numerics(): any[];
+	sum(): number;
+	average(): number;
+    peach(otherArray: any[], f: (x: any, y: any) => any) : any;
+	pmap(otherArray: any[], f: (x: any, y: any) => any) : any;
+	weightedAverage(otherArray: any[]) : number;
+	flatten(): any[];
 }
 
 /** Returns only the numeric elements of an array. */
@@ -26,8 +27,17 @@ Array.prototype.average = function() : number {
 	return numerics.sum() / numerics.length;
 }
 
+/** An each with two arrays in parallel. */
+Array.prototype.peach = function(otherArray: any[], f: (x: any, y: any) => any) {
+    if (this.length !== otherArray.length)
+        throw new Error('Array length mismatch.');
+    
+    for (var i = 0; i < this.length; i++)
+        f(this[i], otherArray[i]);
+}
+
 /** A map with two arrays in parallel. */
-Array.prototype.pmap = function(otherArray : any[], f : (x : any, y : any) => any) {
+Array.prototype.pmap = function(otherArray: any[], f: (x: any, y: any) => any) {
 	if (this.length !== otherArray.length)
 		throw new Error('Array length mismatch.');
 
@@ -39,7 +49,7 @@ Array.prototype.pmap = function(otherArray : any[], f : (x : any, y : any) => an
 }
 
 /** Returns the weighted average of the numeric elements of an array. */
-Array.prototype.weightedAverage = function(weights : any[]) : number {
+Array.prototype.weightedAverage = function(weights: any[]) : number {
 	var numerics = this.numerics();
 	var weightNums = weights.numerics();
 
@@ -61,7 +71,7 @@ Array.prototype.flatten = function() : any[] {
 }
 
 /** Returns a list of natural numbers in the form [0, 1, 2, ...] of the given length. */
-var upto = function(n : number) : number[] {
+var upto = function(n: number) : number[] {
 	var list = [];
 
 	for (var i = 0; i < n; i++) {
@@ -73,7 +83,7 @@ var upto = function(n : number) : number[] {
 
 /** Alternative to isNaN. Guarantees that any value that this function returns false for
     can be used in numeric calculations without a hitch. */
-function actuallyIsNaN(x : any) : boolean {
+function actuallyIsNaN(x: any) : boolean {
 	return isNaN(x) ||
 		// null and undefined are not numeric to us
 		x === null || typeof x === undefined;

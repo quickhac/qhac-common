@@ -1,6 +1,3 @@
-/// <reference path='data.ts'/>
-/// <reference path='qmath.ts'/>
-
 module GPACalc {
 	var DEFAULT_GPA_PRECISION = 4;
 

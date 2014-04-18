@@ -1,19 +1,18 @@
 /// <reference path='data.ts'/>
+/// <reference path='func.ts'/>
+
+interface XHRParams {
+	method: string;
+	url: string;
+	query: Object;
+	success: Function;
+	fail: (e: Error) => void;
+}
 
 /** A helper class for making XMLHttpRequests. */
 class XHR {
 	_xhr : XMLHttpRequest;
-	_method : string;
-	_url : string;
-	_params : Object;
-	_success : Function;
-	_fail : Function;
-
-	/** Calls 'f' with arguments if it is a function, otherwise does nothing. */
-	static _maybeCall(f : any, _this : any, args : any[]) : any {
-		if (typeof f === 'function')
-			return f.apply(_this, args);
-	}
+	_params: XHRParams;
 
 	/** Encodes a parameter from a key/value pair. */
 	static _encodeParameter(key : string, value : any) : string {
@@ -29,18 +28,14 @@ class XHR {
 		return function () {
 			if (_this._xhr.readyState === 4) {
 				if (_this._xhr.status === 200) {
-					XHR._maybeCall(_this._success, _this._xhr, [_this._xhr.responseText, _this._xhr.responseXML]);
+                    var doc: Document;
+                    try { doc = DOMTools.parse(_this._xhr.responseText); } catch (e) {}
+					Function.maybeCall(_this._params.success, _this._xhr, [_this._xhr.responseText, doc]);
 				} else if (_this._xhr.status === 500) {
-					XHR._maybeCall(_this._fail, _this._xhr, [
+					Function.maybeCall(_this._params.fail, _this._xhr, [
 						// FIXME: TypeScript complains about the following call to the
 						// constructor of ErrorEvent not matching any signatures.
-						new ErrorEvent('xhr', {
-							message: 'Internal Server Error',
-							error: {
-								message:'Internal Servor Error',
-								description: 'Something went wrong on the server side.'
-							}
-						})
+						new Error('500 Internal Server Error')
 					]);
 				}
 			}
@@ -56,15 +51,15 @@ class XHR {
 	/** Sends a GET request with the specified parameters. */
 	_sendGet() : void {
 		// only add ? if params exist
-		var params = XHR._createParamsString(this._params);
-		if (params !== '') params = '?' + params;
+		var query = XHR._createParamsString(this._params.query);
+		if (query !== '') query = '?' + query;
 
 		// log
-		console.log('XHR loading: ' + this._url + ' via GET');
-		console.log('Params: ' + params);
+		Log.d('XHR loading: ' + this._params.url + ' via GET');
+		Log.d('Params: ' + query);
 
 		// send
-		this._xhr.open('GET', this._url + params, true);
+		this._xhr.open('GET', this._params.url + query, true);
 		this._xhr.onreadystatechange = XHR._stateChangeHandler(this);
 		this._xhr.send(null);
 	}
@@ -72,13 +67,13 @@ class XHR {
 	/** Sends a POST request with the specified parameters. */
 	_sendPost() : void {
 		// open url
-		this._xhr.open('POST', this._url, true);
+		this._xhr.open('POST', this._params.url, true);
 		this._xhr.onreadystatechange = XHR._stateChangeHandler(this);
 
-		var paramString = XHR._createParamsString(this._params);
+		var paramString = XHR._createParamsString(this._params.query);
 
-		console.log('XHR loading: ' + this._url + ' via POST');
-		console.log('Params: ' + paramString);
+		Log.d('XHR loading: ' + this._params.url + ' via POST');
+		Log.d('Params: ' + paramString);
 
 		// send the proper header information along with the request
 		this._xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -88,40 +83,18 @@ class XHR {
 	}
 
 	/** Creates a new XHR and returns itself for chaining */
-	constructor(method : string, url : string) {
-		if (method !== 'GET' && method !== 'POST')
-			throw new Error('Unsupported HTTP request type: ' + method);
+	constructor(params: XHRParams) {
+		if (params.method !== 'GET' && params.method !== 'POST')
+			throw new Error('Unsupported HTTP request type: ' + params.method);
 
 		this._xhr = new XMLHttpRequest();
-		this._method = method;
-		this._url = url;
-		return this;
-	}
-
-	/** Sets the callback for when the request succeeds. */
-	success(f : Function) : XHR {
-		this._success = f;
-		return this;
-	}
-
-	/** Sets the callback for when the request fails. */
-	fail(f : (ev : ErrorEvent) => any) : XHR {
-		this._fail = f;
-		this._xhr.onerror = function (ev : ErrorEvent) {
-			return XHR._maybeCall(f, this, [ev]);
-		}
-		return this;
-	}
-
-	/** Sets the parameters to be passed to the server. */
-	params(params : Object) : XHR {
 		this._params = params;
 		return this;
 	}
 
 	/** Sends an XHR */
 	send() : void {
-		if (this._method === 'GET')
+		if (this._params.method === 'GET')
 			this._sendGet();
 		else
 			this._sendPost();
