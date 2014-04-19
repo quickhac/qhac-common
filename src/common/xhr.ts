@@ -31,12 +31,10 @@ class XHR {
                     var doc: Document;
                     try { doc = DOMTools.parse(_this._xhr.responseText); } catch (e) {}
 					Function.maybeCall(_this._params.success, _this._xhr, [_this._xhr.responseText, doc]);
+				} else if (_this._xhr.status === 404) {
+					Function.maybeCall(_this._params.fail, _this._xhr, [new Error('404 File Not Found')]);
 				} else if (_this._xhr.status === 500) {
-					Function.maybeCall(_this._params.fail, _this._xhr, [
-						// FIXME: TypeScript complains about the following call to the
-						// constructor of ErrorEvent not matching any signatures.
-						new Error('500 Internal Server Error')
-					]);
+					Function.maybeCall(_this._params.fail, _this._xhr, [new Error('500 Internal Server Error')]);
 				}
 			}
 		}

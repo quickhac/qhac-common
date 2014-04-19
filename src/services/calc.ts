@@ -82,7 +82,7 @@ class Calculator {
 		var ecAssignments = assignments.filter(a => a.extraCredit && !actuallyIsNaN(a.ptsEarned));
 
 		// add up points earned
-		return ecAssignments.map(a => a.ptsEarned).sum();
+		return ecAssignments.map(a => a.ptsEarned).sum() || 0;
 	}
 
 }

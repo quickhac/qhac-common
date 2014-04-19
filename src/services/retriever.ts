@@ -34,7 +34,7 @@ class Retriever {
 	 * Logs into the GradeSpeed server of a district with specific login
 	 * information and callbacks.
 	 */
-    login() : Promise {
+    login(): Promise {
         var creds = this.credentials;
         var api = creds.district.api;
         var _this = this;
@@ -118,7 +118,7 @@ class Retriever {
 	}
 
 	// select a student
-	selectStudent(studentId: string) : Promise {
+	selectStudent(studentId: string): Promise {
         var __this = this;
         return new Promise((resolve: Function, reject: (e: Error) => any) => {
             var api = __this.credentials.district.api;
@@ -148,7 +148,7 @@ class Retriever {
         });
 	}
 
-	getYear() : Promise {
+	getYear(): Promise {
         var __this = this;
         return new Promise((resolve: (courses: Course[]) => any, reject: (e: Error) => any) => {
             var api = __this.credentials.district.api;
