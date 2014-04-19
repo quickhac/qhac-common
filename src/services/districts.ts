@@ -46,10 +46,15 @@ module Districts {
 				}),
 				getChoices: ((doc: Document) =>
 					doc.find('.sg-student-picker-row')
-					.map((i: HTMLElement) => ({
-						name: i.find('.sg-picker-student-name')[0].innerText,
-						id: (<HTMLInputElement> i.find('input[name=studentId]')[0]).value
-					})))
+					.map((i: HTMLElement) => {
+                        var name = i.find('.sg-picker-student-name')[0].innerText;
+                        var studentId = (<HTMLInputElement> i.find('input[name=studentId]')[0]).value;
+                        return {
+                            id: CryptoJS.SHA1(name + '|' + studentId),
+                            name: name,
+    						studentId: studentId
+                        }
+					}))
 			},
 		    year: {
 				loadUrl: 'https://accesscenter.roundrockisd.org/HomeAccess/content/student/gradespeed.aspx?target=https://gradebook.roundrockisd.org/pc/displaygrades.aspx',
@@ -169,10 +174,15 @@ module Districts {
     				}
                 },
 				getChoices: (doc: Document) => (
-					doc.find('#_ctl0_ddlStudents option').map((o : HTMLElement) => ({
-						name: o.innerText,
-						id: o.attr('value')
-					})))
+					doc.find('#_ctl0_ddlStudents option').map((o : HTMLElement) => {
+                        var name = o.innerText;
+                        var studentId = o.attr('value');
+						return {
+                            id: CryptoJS.SHA1(name + '|' + studentId),
+                            name: name,
+						    studentId: studentId
+                        }
+					}))
 			},
 			year: {
 				loadUrl: 'https://gradespeed.austinisd.org/pc/ParentStudentGrades.aspx',
