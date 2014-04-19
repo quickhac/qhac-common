@@ -16,6 +16,10 @@ class Retriever {
     
     setCredentials(credentials: Credentials): void {
         this.credentials = credentials;
+        
+        // reset other information on credential change
+        this.student = this.lastResponse = this.lastResponseTime
+            = this.lastGradesResponse = this.lastGradesResponseTime = null;
     }
     
     setStudent(student: Student): void {
@@ -105,10 +109,10 @@ class Retriever {
                     }
                 
                 var choices = api.selectStudent.getChoices(doc);
-                if (this.student === null)
+                if (typeof _this.student === 'undefined' || _this.student === null)
                     Function.maybeCall(resolve, null, [choices]);
                 else
-                    _this.selectStudent(this.student.studentId).then(resolve, reject);
+                    _this.selectStudent(_this.student.studentId).then(resolve, reject);
             }
         });
 	}
@@ -118,14 +122,18 @@ class Retriever {
         var __this = this;
         return new Promise((resolve: Function, reject: (e: Error) => any) => {
             var api = __this.credentials.district.api;
+            
+            __this.assureLoggedIn().then(sendSelectRequest, reject);
 
-    		new XHR({
-                method: api.selectStudent.submitMethod,
-                url: api.selectStudent.submitUrl,
-    			success: _resolve,
-    			fail: reject,
-    			query: api.selectStudent.makeSubmitQuery(studentId, this.lastResponse)
-    	    }).send();
+            function sendSelectRequest() {
+        		new XHR({
+                    method: api.selectStudent.submitMethod,
+                    url: api.selectStudent.submitUrl,
+        			success: _resolve,
+        			fail: reject,
+        			query: api.selectStudent.makeSubmitQuery(studentId, this.lastResponse)
+        	    }).send();
+            }
             
             function _resolve(text: string, doc: Document) {
                 if (!api.selectStudent.validate(doc)) {
@@ -144,13 +152,23 @@ class Retriever {
         var __this = this;
         return new Promise((resolve: (courses: Course[]) => any, reject: (e: Error) => any) => {
             var api = __this.credentials.district.api;
-    		new XHR({
-                method: api.year.loadMethod,
-                url: api.year.loadUrl,
-                query: api.year.makeQuery(this.lastResponse),
-    			success: _resolve,
-    			fail: reject
-            }).send();
+            
+            if (typeof __this.student === 'undefined' || __this.student === null) {
+                Function.maybeCall(reject, null, [new Error('no student loaded')]);
+                return;
+            }
+            
+            __this.assureLoggedIn().then(sendYearRequest, reject);
+            
+            function sendYearRequest() {
+                new XHR({
+                    method: api.year.loadMethod,
+                    url: api.year.loadUrl,
+                    query: api.year.makeQuery(this.lastResponse),
+                    success: _resolve,
+                    fail: reject
+                }).send();
+            }
             
             function _resolve(text: string, doc: Document) {
                 if (!api.year.validate(doc)) {
@@ -173,10 +191,7 @@ class Retriever {
 		return new Promise((resolve: (cycle: Cycle) => any, reject: (e: Error) => any) => {
             var api = __this.credentials.district.api;
             
-            if (api.cycle.requiresYearLoaded && this.lastGradesResponseTime + 1000 * 60 * 5 < +new Date())
-                __this.getYear().then(sendCycleRequest, reject);
-            else
-                sendCycleRequest();
+            __this.assureYearLoadRequirementsSatisfied().then(sendCycleRequest, reject);
             
             function sendCycleRequest() {
                 new XHR({
@@ -201,5 +216,33 @@ class Retriever {
             }
         });
 	}
+    
+    isLoggedIn(): boolean {
+        return this.lastResponseTime != null &&
+            this.lastResponseTime + 1000 * 60 * 5 >= +new Date();
+    }
+    
+    isYearLoaded(): boolean {
+        return this.lastGradesResponseTime != null &&
+            this.lastGradesResponseTime + 1000 * 60 * 5 >= +new Date();
+    }
+    
+    assureLoggedIn(): Promise {
+        return new Promise((resolve, reject) => {
+            if (!this.isLoggedIn()) this.login().then(resolve, reject);
+            else Function.maybeCall(resolve, null, []);
+        });
+    }
+    
+    assureYearLoadRequirementsSatisfied(): Promise {
+        var __this = this;
+        return new Promise((resolve, reject) => {
+            __this.assureLoggedIn().then(() => {
+                if (__this.credentials.district.api.cycle.requiresYearLoaded && !__this.isYearLoaded())
+                    __this.getYear().then(resolve, reject);
+                else Function.maybeCall(resolve, null, []);
+            }, reject);
+        });
+    }
 
 }
