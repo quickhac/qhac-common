@@ -86,7 +86,7 @@ module Districts {
 						if (!/^d+$/.test(cell.innerText)) return;
 						
 						// get the date
-						var date = DateTools.parseSmallEndianDate(cell.innerText);
+						var date = DateTools.parseSmallEndianDate(cell.innerText + ' ' + monthText);
 						
 						// parse the title attribute to get blocks and reasons
 						var title = cell.getAttribute('title');

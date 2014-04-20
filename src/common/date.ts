@@ -1,11 +1,10 @@
-/**
- * Assuming that GradeSpeed will only display grades for one year, and assuming
- * that no school year extends beyond July, we can unambiguously add a year to
- * a date in the format 'Jan-01' if we know the current date. This function
- * converts a date string in that format into a Date object with the year value
- * correctly set.
- */
+/** Tools to normalise dates into milliseconds since 1970. */
 module DateTools {
+	/**
+	 * Format: Jan-01
+	 * Assumes the date occurs during the current school year. Also assumes that
+	 * school years end and start on 1 July every year.
+	 */
 	export function parseGradeSpeedDate(input: string) : number {
 		var splits = input.split('-');
 		var date = parseInt(splits[1], 10);
@@ -29,16 +28,24 @@ module DateTools {
 		return Date.UTC(year, month, date);
 	}
 	
+	/** Format: 1 January 1970 */
 	export function parseSmallEndianDate(input: string) : number {
-		Log.err('unimplemented');
+		var splits = input.split(' ');
+		var date = parseInt(splits[0], 10);
+		var month = longMonthToNum(splits[1]);
+		var year = parseInt(splits[2], 10);
 		
-		return 0;
+		return Date.UTC(year, month, date);
 	}
 	
+	/** Format: 1/1/1970 or 01/01/1970 */
 	export function parseMDYDate(input: string) : number {
-		Log.err('unimplemented');
+		var splits = input.split('/');
+		var month = parseInt(splits[0], 10);
+		var date = parseInt(splits[1], 10);
+		var year = parseInt(splits[2], 10);
 	
-		return 0;
+		return Date.UTC(year, month, date);
 	}
 	
 	var longMonthNames =
