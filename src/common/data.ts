@@ -1,96 +1,96 @@
 // Interfaces for dealing with different types of data
 
 interface Account {
-    id: string /* SHA1 */;
-    credentials: Credentials;
-    students: Student[];
+	id: string /* SHA1 */;
+	credentials: Credentials;
+	students: Student[];
 }
-    
-    interface Credentials {
-        district: District;
-        username: string;
-        password: string; }
+	
+	interface Credentials {
+		district: District;
+		username: string;
+		password: string; }
 
-    interface Student {
-    	id: string /* SHA1 */;
-    	name: string;
-    	school: string;
-    	studentId: string;
-    	gpaData: GPAData;
-    	grades: Grades;
-    	attendance: Attendance; }
-    
-    	interface GPAData {
-    		prevGpa: number /* float */;
-    		numPrevSemesters: number /* float */;
-    		weightedCourses: string[] /* Course.id[] */;
-    		electiveCourses: string[] /* Course.id[] */;
-    		extraCreditWhitelist: string[] /* Assignment.id[] */;
-            extraCreditBlacklist: string[] /* Assignment.id[] */; }
-    
-    	interface Grades {
-    		lastUpdated: number /* date */;
-    		changedGrades: GradeChange[];
-    		courses: Course[]; }
-    
-    		interface GradeChange {
-    			id: string /* Course.id / Assignment.id */;
-    			type: GradeChangeType;
-                read: boolean; }
-    
-    			enum GradeChangeType { NEW, UP, DOWN }
-    
-    		interface Course {
-    			id: string /* SHA1 */;
-    			title: string;
-    			teacherName: string;
-    			teacherEmail: string;
-    			period: number /* int */;
-    			semesters: Semester[]; }
-    
-    			interface Semester {
-    				average: number /* int */;
-    				examGrade: number /* int */;
-    				examIsExempt: boolean;
-    				cycles: Cycle[]; }
-    
-    				interface Cycle {
-    					urlHash: string /* Base64 */;
-    					lastUpdated: number /* date */;
-    					changedGrades: GradeChange[];
-    					average: number /* int */;
-    					title: string;
-    					categories: Category[]; }
-    
-    					interface Category {
-    						id: string /* SHA1 */;
-    						title: string;
-    						weight: number /* float */;
-    						average: number /* float */;
-    						bonus: number /* float */;
-    						assignments: Assignment[]; }
-    
-    						interface Assignment {
-    							id: string /* SHA1 */;
-    							title: string;
-    							dateDue: number /* date */;
-    							dateAssigned: number /* date */;
-    							ptsEarned: number /* float */;
-    							ptsPossible: number /* float */;
-    							weight: number /* float */;
-    							note: string;
-    							extraCredit: boolean; }
-    
-    	interface Attendance {
-    		lastUpdated: number /* date */;
-    		events: AttendanceEvent[]; }
-    
-    		interface AttendanceEvent {
-    			id: string /* SHA1 */;
-    			date: number /* date */;
-    			block: number /* int */;
-    			explanation: string;
-                read: boolean; }
+	interface Student {
+		id: string /* SHA1 */;
+		name: string;
+		school: string;
+		studentId: string;
+		gpaData: GPAData;
+		grades: Grades;
+		attendance: Attendance; }
+	
+		interface GPAData {
+			prevGpa: number /* float */;
+			numPrevSemesters: number /* float */;
+			weightedCourses: string[] /* Course.id[] */;
+			electiveCourses: string[] /* Course.id[] */;
+			extraCreditWhitelist: string[] /* Assignment.id[] */;
+			extraCreditBlacklist: string[] /* Assignment.id[] */; }
+	
+		interface Grades {
+			lastUpdated: number /* date */;
+			changedGrades: GradeChange[];
+			courses: Course[]; }
+	
+			interface GradeChange {
+				id: string /* Course.id / Assignment.id */;
+				type: GradeChangeType;
+				read: boolean; }
+	
+				enum GradeChangeType { NEW, UP, DOWN }
+	
+			interface Course {
+				id: string /* SHA1 */;
+				title: string;
+				teacherName: string;
+				teacherEmail: string;
+				period: number /* int */;
+				semesters: Semester[]; }
+	
+				interface Semester {
+					average: number /* int */;
+					examGrade: number /* int */;
+					examIsExempt: boolean;
+					cycles: Cycle[]; }
+	
+					interface Cycle {
+						urlHash: string /* Base64 */;
+						lastUpdated: number /* date */;
+						changedGrades: GradeChange[];
+						average: number /* int */;
+						title: string;
+						categories: Category[]; }
+	
+						interface Category {
+							id: string /* SHA1 */;
+							title: string;
+							weight: number /* float */;
+							average: number /* float */;
+							bonus: number /* float */;
+							assignments: Assignment[]; }
+	
+							interface Assignment {
+								id: string /* SHA1 */;
+								title: string;
+								dateDue: number /* date */;
+								dateAssigned: number /* date */;
+								ptsEarned: number /* float */;
+								ptsPossible: number /* float */;
+								weight: number /* float */;
+								note: string;
+								extraCredit: boolean; }
+	
+		interface Attendance {
+			lastUpdated: number /* date */;
+			events: AttendanceEvent[]; }
+	
+			interface AttendanceEvent {
+				id: string /* SHA1 */;
+				date: number /* date */;
+				block: number /* int */;
+				explanation: string;
+				read: boolean; }
 
 interface District {
 	name: string;
@@ -117,7 +117,7 @@ interface District {
 			submitUrl: string;
 			submitMethod: string;
 			validateLoginPage: (doc: Document) => boolean;
-            validateAfterLogin: (doc: Document) => boolean;
+			validateAfterLogin: (doc: Document) => boolean;
 			makeQuery: (u: string, p: string, doc: Document) => Object; }
 
 		interface APISelectStudent {
@@ -128,7 +128,7 @@ interface District {
 			validate: (doc: Document) => boolean; // validates the picker
 			pickerLoadsFromAjax: boolean;
 			isRequired: (doc: Document) => boolean;
-            makeLoadQuery: (doc: Document) => Object;
+			makeLoadQuery: (doc: Document) => Object;
 			makeSubmitQuery: (id: string, doc: Document) => Object;
 			getChoices: (doc: Document) => Student[]; }
 
@@ -167,9 +167,9 @@ interface WordArray {
 
 // Promise
 declare class Promise {
-    constructor(f: Function, e?: Function);
+	constructor(f: Function, e?: Function);
 
-    then(f: Function, e?: Function): Promise;    
+	then(f: Function, e?: Function): Promise;    
 }
 
 /** Iterates through all properties that belong to an object. */

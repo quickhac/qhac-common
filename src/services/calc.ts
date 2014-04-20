@@ -1,14 +1,14 @@
 class Calculator {
-    
-    district: District;
-    
-    constructor(district: District) {
-        this.district = district;
-    }
-    
-    setDistrict(district: District): void {
-        this.district = district;
-    }
+	
+	district: District;
+	
+	constructor(district: District) {
+		this.district = district;
+	}
+	
+	setDistrict(district: District): void {
+		this.district = district;
+	}
 
 	/** Calculates a semester average from the cycles and exam grade provided */
 	semesterAverage(semester: Semester): number {
@@ -16,16 +16,16 @@ class Calculator {
 		var cycles: number[] = semester.cycles.map(c => c.average).numerics();
 
 		var cycleAvg: number,
-		    cycleWeight: number,
-		    examGrade: number,
-		    examWeight: number;
+			cycleWeight: number,
+			examGrade: number,
+			examWeight: number;
 
 		// calculate the cycle grades
 		cycleAvg = cycles.average();
 		cycleWeight =
 			// total cycle weight + exam weight = 100, therefore
 			// total cycle weight = 100 - exam weight
-            // but we multiply by 3 to avoid floating point roundoff
+			// but we multiply by 3 to avoid floating point roundoff
 			(300 - this.district.examWeight * 3)
 			// multiply the total cycle weight by the proportion of cycles that we are
 			// including in the calculation
@@ -44,7 +44,7 @@ class Calculator {
 	}
 
 	/** Calculates a cycle average given a ClassGrades object. Reads the category average
-	    and bonus by category. */
+		and bonus by category. */
 	cycleAverage(grades: Cycle): number {
 		var filteredCategories = grades.categories.filter(c => !actuallyIsNaN(c.average));
 
@@ -76,7 +76,7 @@ class Calculator {
 	}
 
 	/** Calculates the total bonus from extra credit assignments in a category to
-	    add to the class grade average. */
+		add to the class grade average. */
 	categoryBonuses(assignments: Assignment[]): number {
 		// include only extra credit assignments with a grade entered
 		var ecAssignments = assignments.filter(a => a.extraCredit && !actuallyIsNaN(a.ptsEarned));

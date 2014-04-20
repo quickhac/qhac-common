@@ -1,28 +1,28 @@
 interface SemesterParams {
-    semesters: number;
-    cyclesPerSemester: number;
+	semesters: number;
+	cyclesPerSemester: number;
 }
 
 class Parser {
-    EXTRA_CREDIT_REGEX = /^extra credit$|^ec$/i;
+	EXTRA_CREDIT_REGEX = /^extra credit$|^ec$/i;
 	EXTRA_CREDIT_NOTE_REGEX = /extra credit/i;
 	GRADE_CELL_URL_REGEX = /\?data=([\w\d%]*)/;
-    
-    district: District;
-    calculator: Calculator;
-    
-    constructor(district: District, calculator: Calculator) {
-        this.district = district;
-        this.calculator = calculator;
-    }
-    
-    setDistrict(district: District) {
-        this.district = district;
-    }
-    
-    setCalculator(calculator: Calculator) {
-        this.calculator = calculator;
-    }
+	
+	district: District;
+	calculator: Calculator;
+	
+	constructor(district: District, calculator: Calculator) {
+		this.district = district;
+		this.calculator = calculator;
+	}
+	
+	setDistrict(district: District) {
+		this.district = district;
+	}
+	
+	setCalculator(calculator: Calculator) {
+		this.calculator = calculator;
+	}
 
 	getCourseIdFromHash(hash: string): string {
 		return hash.split('|')[3];
@@ -47,12 +47,12 @@ class Parser {
 
 	/** Gets information for all courses */
 	parseYear(doc: Document): Course[] {
-        var _this = this;
+		var _this = this;
 		// find the grade table
 		var $gradeTable = doc.find('.DataTable')[0];
 
 		// make semester parameters
-        // TODO: support elementary school
+		// TODO: support elementary school
 		var $headerCells = $gradeTable.find('tr.TableHeader')[0].find('th');
 		var sem = parseInt($headerCells[$headerCells.length - 1].innerText.match(/\d+/)[0]);
 		var cyc = parseInt($headerCells[$headerCells.length - 3].innerText.match(/\d+/)[0]) / sem;
@@ -63,104 +63,104 @@ class Parser {
 
 		// parse each course
 		return $rows.map((r : Node) => parseCourse(r));
-        
-        function parseCourse($row: Node): Course {
-            // find the cells in this row
-            var $cells = $row.findTag('td');
-    
-            // find the teacher name and email
-            var $teacherCell = $row.findClass('EmailLink')[0];
-    
-            // get the course number
-            var courseNum = _this.findCourseNum($cells);
-            var courseId = courseNum === null ? null : CryptoJS.SHA1(courseNum).toString();
-            
-            // get the period
-            var period = parseInt($cells[_this.district.columnOffsets.period].innerText, 10);
-    
-            // parse semesters
-            var semesters: Semester[] = [];
-            for (var i = 0; i < semParams.semesters; i++) {
-                // get cells for the semester
-                var $semesterCells = [];
-                // find the cells that are pertinent to this semester
-                // $semesterCells becomes [cycle, cycle, ... , cycle, exam, semester] after filtering
-                var cellOffset = _this.district.columnOffsets.courses + i * (semParams.cyclesPerSemester + 2);
-                for (var j = 0; j < semParams.cyclesPerSemester + 2; j++)
-                    $semesterCells[j] = $cells[cellOffset + j];
-                // parse the semester
-                semesters[i] = parseSemester($semesterCells);
-            }
-    
-            return {
-                id: courseId,
-                title: $cells[_this.district.columnOffsets.title].innerText,
-                teacherName: $teacherCell.innerText,
-                teacherEmail: $teacherCell.attr('href').substr(7),
-                period: period,
-                semesters: semesters
-            }
-            
-            function parseSemester($cells: Node[]): Semester {
-                // parse cycles
-                var cycles: Cycle[] = [];
-                for (var i = 0; i < semParams.cyclesPerSemester; i++) {
-                    cycles[i] = parseCycleInYear($cells[i]);
-                }
-        
-                // parse exam grade
-                var $exam = $cells[semParams.cyclesPerSemester];
-                var examGrade = NaN, examIsExempt = false;
-                if ($exam.innerText === '' || $exam.innerText === '&nbsp;') {}
-                else if ($exam.innerText === 'EX' || $exam.innerText === 'Exc')
-                    examIsExempt = true;
-                else
-                    examGrade = parseInt($exam.innerText);
-        
-                // parse semester average
-                // TODO: calculate semester average instead of parsing it? because
-                // GradeSpeed sometimes messes up
-                var semesterAverage = parseInt($cells[semParams.cyclesPerSemester + 1].innerText);
-        
-                // return a semester
-                return {
-                    average: semesterAverage,
-                    examGrade: examGrade,
-                    examIsExempt: examIsExempt,
-                    cycles: cycles
-                }
-                
-                function parseCycleInYear($cell: Node): Cycle {
-                    // find a link, if any
-                    var $link = $cell.findTag('a');
-            
-                    // if there is no link, the cell is empty; return empty values
-                    if (!$link.length) return {
-                        id: null,
-                        urlHash: null,
-                        lastUpdated: null,
-                        changedGrades: null,
-                        average: NaN,
-                        title: null,
-                        categories: null
-                    };
-            
-                    // find a grade
-                    var average = parseInt($link[0].innerText);
-                    var urlHash = decodeURIComponent(_this.GRADE_CELL_URL_REGEX.exec($link[0].attr('href'))[1]);
-            
-                    // return it
-                    return {
-                        urlHash: urlHash,
-                        lastUpdated: null,
-                        changedGrades: null,
-                        average: average,
-                        title: null,
-                        categories: null
-                    }
-                }
-            }
-        }
+		
+		function parseCourse($row: Node): Course {
+			// find the cells in this row
+			var $cells = $row.findTag('td');
+	
+			// find the teacher name and email
+			var $teacherCell = $row.findClass('EmailLink')[0];
+	
+			// get the course number
+			var courseNum = _this.findCourseNum($cells);
+			var courseId = courseNum === null ? null : CryptoJS.SHA1(courseNum).toString();
+			
+			// get the period
+			var period = parseInt($cells[_this.district.columnOffsets.period].innerText, 10);
+	
+			// parse semesters
+			var semesters: Semester[] = [];
+			for (var i = 0; i < semParams.semesters; i++) {
+				// get cells for the semester
+				var $semesterCells = [];
+				// find the cells that are pertinent to this semester
+				// $semesterCells becomes [cycle, cycle, ... , cycle, exam, semester] after filtering
+				var cellOffset = _this.district.columnOffsets.courses + i * (semParams.cyclesPerSemester + 2);
+				for (var j = 0; j < semParams.cyclesPerSemester + 2; j++)
+					$semesterCells[j] = $cells[cellOffset + j];
+				// parse the semester
+				semesters[i] = parseSemester($semesterCells);
+			}
+	
+			return {
+				id: courseId,
+				title: $cells[_this.district.columnOffsets.title].innerText,
+				teacherName: $teacherCell.innerText,
+				teacherEmail: $teacherCell.attr('href').substr(7),
+				period: period,
+				semesters: semesters
+			}
+			
+			function parseSemester($cells: Node[]): Semester {
+				// parse cycles
+				var cycles: Cycle[] = [];
+				for (var i = 0; i < semParams.cyclesPerSemester; i++) {
+					cycles[i] = parseCycleInYear($cells[i]);
+				}
+		
+				// parse exam grade
+				var $exam = $cells[semParams.cyclesPerSemester];
+				var examGrade = NaN, examIsExempt = false;
+				if ($exam.innerText === '' || $exam.innerText === '&nbsp;') {}
+				else if ($exam.innerText === 'EX' || $exam.innerText === 'Exc')
+					examIsExempt = true;
+				else
+					examGrade = parseInt($exam.innerText);
+		
+				// parse semester average
+				// TODO: calculate semester average instead of parsing it? because
+				// GradeSpeed sometimes messes up
+				var semesterAverage = parseInt($cells[semParams.cyclesPerSemester + 1].innerText);
+		
+				// return a semester
+				return {
+					average: semesterAverage,
+					examGrade: examGrade,
+					examIsExempt: examIsExempt,
+					cycles: cycles
+				}
+				
+				function parseCycleInYear($cell: Node): Cycle {
+					// find a link, if any
+					var $link = $cell.findTag('a');
+			
+					// if there is no link, the cell is empty; return empty values
+					if (!$link.length) return {
+						id: null,
+						urlHash: null,
+						lastUpdated: null,
+						changedGrades: null,
+						average: NaN,
+						title: null,
+						categories: null
+					};
+			
+					// find a grade
+					var average = parseInt($link[0].innerText);
+					var urlHash = decodeURIComponent(_this.GRADE_CELL_URL_REGEX.exec($link[0].attr('href'))[1]);
+			
+					// return it
+					return {
+						urlHash: urlHash,
+						lastUpdated: null,
+						changedGrades: null,
+						average: average,
+						title: null,
+						categories: null
+					}
+				}
+			}
+		}
 	}
 
 	/** Gets the name of the current student. */
@@ -174,16 +174,16 @@ class Parser {
 
 		// get data
 		var title: string,
-		    dateDue: number,
-            dateAssigned: number,
-		    note: string,
-		    ptsEarned: string,
-		    ptsEarnedNum: number,
-		    ptsPossNum: number,
-		    weight: number;
+			dateDue: number,
+			dateAssigned: number,
+			note: string,
+			ptsEarned: string,
+			ptsEarnedNum: number,
+			ptsPossNum: number,
+			weight: number;
 		title = getText('AssignmentName');
 		dateDue = DateTools.parseGradeSpeedDate(getText('DateDue'));
-        dateAssigned = DateTools.parseGradeSpeedDate(getText('DateAssigned'));
+		dateAssigned = DateTools.parseGradeSpeedDate(getText('DateAssigned'));
 		note = getText('AssignmentNote');
 		ptsEarned = getText('AssignmentGrade');
 		ptsPossNum = is100Pt ? 100 : parseInt(getText('AssignmentPointsPossible'));
@@ -226,7 +226,7 @@ class Parser {
 			id: assignmentId,
 			title: title,
 			dateDue: dateDue,
-            dateAssigned: dateAssigned,
+			dateAssigned: dateAssigned,
 			ptsEarned: ptsEarnedNum,
 			ptsPossible: ptsPossNum,
 			weight: weight,
@@ -299,8 +299,8 @@ class Parser {
 		var $categories = doc.find('.DataTable').splice(1);
 
 		return {
-            lastUpdated: null,
-            changedGrades: null,
+			lastUpdated: null,
+			changedGrades: null,
 			title: classNameMatches[1],
 			urlHash: urlHash,
 			period: parseInt(classNameMatches[2], 10),
@@ -312,14 +312,14 @@ class Parser {
 	// only call this function on the grades page
 	parseStudentInfo(doc: Document, id: string): Student {
 		Log.err('unimplemented');
-        return {
-            id: null,
-            name: null,
-            school: null,
-            studentId: null,
-            gpaData: null,
-            grades: null,
-            attendance: null
-        };
+		return {
+			id: null,
+			name: null,
+			school: null,
+			studentId: null,
+			gpaData: null,
+			grades: null,
+			attendance: null
+		};
 	}
 }

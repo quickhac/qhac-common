@@ -2,7 +2,7 @@ interface Array<T> {
 	numerics(): any[];
 	sum(): number;
 	average(): number;
-    peach(otherArray: any[], f: (x: any, y: any) => any) : any;
+	peach(otherArray: any[], f: (x: any, y: any) => any) : any;
 	pmap(otherArray: any[], f: (x: any, y: any) => any) : any;
 	weightedAverage(otherArray: any[]) : number;
 	flatten(): any[];
@@ -29,11 +29,11 @@ Array.prototype.average = function() : number {
 
 /** An each with two arrays in parallel. */
 Array.prototype.peach = function(otherArray: any[], f: (x: any, y: any) => any) {
-    if (this.length !== otherArray.length)
-        throw new Error('Array length mismatch.');
-    
-    for (var i = 0; i < this.length; i++)
-        f(this[i], otherArray[i]);
+	if (this.length !== otherArray.length)
+		throw new Error('Array length mismatch.');
+	
+	for (var i = 0; i < this.length; i++)
+		f(this[i], otherArray[i]);
 }
 
 /** A map with two arrays in parallel. */
@@ -82,7 +82,7 @@ var upto = function(n: number) : number[] {
 }
 
 /** Alternative to isNaN. Guarantees that any value that this function returns false for
-    can be used in numeric calculations without a hitch. */
+	can be used in numeric calculations without a hitch. */
 function actuallyIsNaN(x: any) : boolean {
 	return isNaN(x) ||
 		// null and undefined are not numeric to us

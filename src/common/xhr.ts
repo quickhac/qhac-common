@@ -28,8 +28,8 @@ class XHR {
 		return function () {
 			if (_this._xhr.readyState === 4) {
 				if (_this._xhr.status === 200) {
-                    var doc: Document;
-                    try { doc = DOMTools.parse(_this._xhr.responseText); } catch (e) {}
+					var doc: Document;
+					try { doc = DOMTools.parse(_this._xhr.responseText); } catch (e) {}
 					Function.maybeCall(_this._params.success, _this._xhr, [_this._xhr.responseText, doc]);
 				} else if (_this._xhr.status === 404) {
 					Function.maybeCall(_this._params.fail, _this._xhr, [new Error('404 File Not Found')]);
