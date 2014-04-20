@@ -18,7 +18,14 @@ interface Account {
 		studentId: string;
 		gpaData: GPAData;
 		grades: Grades;
-		attendance: Attendance; }
+		attendance: Attendance;
+		preferences: StudentPrefs }
+
+		interface StudentPrefs {
+			notifsOn: boolean;
+			gpaWeightedOn: boolean;
+			gpaUnweightedOn: boolean;
+		}
 	
 		interface GPAData {
 			prevGpa: number /* float */;

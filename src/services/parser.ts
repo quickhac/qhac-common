@@ -319,7 +319,8 @@ class Parser {
 			studentId: null,
 			gpaData: null,
 			grades: null,
-			attendance: null
+			attendance: null,
+			preferences: null
 		};
 	}
 }
