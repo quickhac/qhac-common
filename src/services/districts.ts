@@ -2,6 +2,7 @@ module Districts {
 
 	/** Round Rock Independent School District */
 	export var roundrock: District = {
+		id: 'roundrock',
 		name: 'Round Rock ISD',
 		examWeight: 15,
 		weightedGpaOffset: 1,
@@ -83,7 +84,7 @@ module Districts {
 					var events: AttendanceEvent[] = [];
 					tableDays.forEach((cell: HTMLElement) => {
 						// test if this is a calendar day
-						if (!/^d+$/.test(cell.innerText)) return;
+						if (!/^\d+$/.test(cell.innerText)) return;
 						
 						// get the date
 						var date = DateTools.parseSmallEndianDate(cell.innerText + ' ' + monthText);
@@ -106,14 +107,15 @@ module Districts {
 							});
 						}
 					});
-					return [];
+					return events;
 				}
 			}
 		}
 	}
 
 	/** Austin Independent School District */
-	export var austin : District = {
+	export var austin: District = {
+		id: 'austin',
 		name: 'Austin ISD',
 		driver: 'gradespeed',
 		examWeight: 25,
@@ -125,8 +127,8 @@ module Districts {
 		},
 		api: {
 			login: {
-				loadUrl: '',
-				loadMethod: '',
+				loadUrl: 'https://gradespeed.austinisd.org/pc/default.aspx?DistrictID=227901',
+				loadMethod: 'GET',
 				submitUrl: 'https://gradespeed.austinisd.org/pc/default.aspx?DistrictID=227901',
 				submitMethod: 'POST',
 				validateLoginPage: (doc: Document) => !!doc.findTag('form').length,

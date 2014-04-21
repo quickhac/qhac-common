@@ -41,7 +41,7 @@ module DateTools {
 	/** Format: 1/1/1970 or 01/01/1970 */
 	export function parseMDYDate(input: string) : number {
 		var splits = input.split('/');
-		var month = parseInt(splits[0], 10);
+		var month = parseInt(splits[0], 10) - 1;
 		var date = parseInt(splits[1], 10);
 		var year = parseInt(splits[2], 10);
 	

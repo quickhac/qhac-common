@@ -7,6 +7,8 @@ class Retriever {
 	lastResponseTime: number;
 	lastGradesResponse: Document;
 	lastGradesResponseTime: number;
+	lastAttendanceResponse: Document;
+	lastAttendanceResponseTime: number;
 	
 	constructor(credentials: Credentials, student: Student, parser: Parser) {
 		this.credentials = credentials;
@@ -131,12 +133,12 @@ class Retriever {
 					url: api.selectStudent.submitUrl,
 					success: _resolve,
 					fail: reject,
-					query: api.selectStudent.makeSubmitQuery(studentId, this.lastResponse)
+					query: api.selectStudent.makeSubmitQuery(studentId, __this.lastResponse)
 				}).send();
 			}
 			
 			function _resolve(text: string, doc: Document) {
-				if (!api.selectStudent.validate(doc)) {
+				if (!api.login.validateAfterLogin(doc)) {
 					Function.maybeCall(reject, null, [new Error('validation failed')]);
 					return;
 				}
@@ -213,6 +215,35 @@ class Retriever {
 				__this.lastGradesResponse = doc;
 				__this.lastGradesResponseTime = +new Date();
 				Function.maybeCall(resolve, null, [__this.parser.parseCycle(doc, urlHash)]);
+			}
+		});
+	}
+	
+	getAttendance(): Promise {
+		var __this = this;
+		return new Promise((resolve, reject) => {
+			var api = __this.credentials.district.api;
+			
+			__this.assureLoggedIn().then(sendAttendanceRequest, reject);
+			
+			function sendAttendanceRequest() {
+				new XHR({
+					method: api.attendance.loadMethod,
+					url: api.attendance.loadUrl,
+					query: api.attendance.makeQuery(this.lastResponse),
+					success: _resolve,
+					fail: reject
+				}).send();
+			}
+			
+			function _resolve(text: string, doc: Document) {
+				if (!api.attendance.validate(doc))
+					Function.maybeCall(reject, null, [new Error('validation failed')]);
+				
+				__this.lastResponseTime = +new Date();
+				__this.lastAttendanceResponse = doc;
+				__this.lastAttendanceResponseTime = +new Date();
+				Function.maybeCall(resolve, null, [api.attendance.getEvents(doc)]);
 			}
 		});
 	}

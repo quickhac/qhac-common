@@ -100,6 +100,7 @@ interface Account {
 				read: boolean; }
 
 interface District {
+	id: string;
 	name: string;
 	examWeight: number /* int */;
 	weightedGpaOffset: number /* int */;
