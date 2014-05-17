@@ -10,6 +10,10 @@ class Retriever {
 	lastAttendanceResponse: Document;
 	lastAttendanceResponseTime: number;
 	
+	/**
+	 * Creates a new Retriever with the account credentials, optional student,
+	 * and parser provided. The parser must be in the same district as the student.
+	 */
 	constructor(credentials: Credentials, student: Student, parser: Parser) {
 		this.credentials = credentials;
 		this.student = student;
@@ -33,8 +37,11 @@ class Retriever {
 	}
 
 	/**
-	 * Logs into the GradeSpeed server of a district with specific login
-	 * information and callbacks.
+	 * Logs into the GradeSpeed server. If <code>this.student</code> is undefined,
+	 * this method will resolve with a list of students to choose from if there
+	 * are multiple students under the account. If there is only one student under
+	 * the account or <code>this.student</code> is set to a student under the
+	 * current account, <code>resolve</code> is called with <code>null</code>.
 	 */
 	login(): Promise {
 		var creds = this.credentials;
@@ -113,13 +120,19 @@ class Retriever {
 				var choices = api.selectStudent.getChoices(doc);
 				if (typeof _this.student === 'undefined' || _this.student === null)
 					Function.maybeCall(resolve, null, [choices]);
+				else if (choices.map(s => s.studentId).indexOf(_this.student.studentId) === -1)
+					Function.maybeCall(reject, null, [new Error('student not under account')]);
 				else
 					_this.selectStudent(_this.student.studentId).then(resolve, reject);
 			}
 		});
 	}
 
-	// select a student
+	/**
+	 * Attempts to select the student under the account with the requested
+	 * student ID. Assumes that the student needs to be selected and that he can
+	 * be selected.
+	 */
 	selectStudent(studentId: string): Promise {
 		var __this = this;
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
@@ -150,6 +163,11 @@ class Retriever {
 		});
 	}
 
+	/**
+	 * Retrieves the year table of grades for the currently logged in student.
+	 * Attempts to log in if the last call to the server was longer than five
+	 * minutes ago.
+	 */
 	getYear(): Promise {
 		var __this = this;
 		return new Promise((resolve: (courses: Course[]) => any, reject: (e: Error) => any) => {
@@ -183,11 +201,18 @@ class Retriever {
 				__this.lastResponseTime = +new Date();
 				__this.lastGradesResponse = doc;
 				__this.lastGradesResponseTime = +new Date();
-				Function.maybeCall(resolve, null, [__this.parser.parseYear(doc)]);
+				Function.maybeCall(resolve, null, [__this.parser.parseYear(doc), __this.parser.parseStudentInfo(doc)]);
 			}
 		})
 	}
 
+	/**
+	 * Retrieves the cycle with the specified url hash (or data hash; used as
+	 * the "?data=" query parameter for the GradeSpeed server). Assures that
+	 * the current student is logged in, and if the district server setup
+	 * requires that the year table is loaded before any cycle is loaded, loads
+	 * the year table first.
+	 */
 	getCycle(urlHash: string): Promise {
 		var __this = this;
 		return new Promise((resolve: (cycle: Cycle) => any, reject: (e: Error) => any) => {
@@ -214,11 +239,15 @@ class Retriever {
 				__this.lastResponseTime = +new Date();
 				__this.lastGradesResponse = doc;
 				__this.lastGradesResponseTime = +new Date();
-				Function.maybeCall(resolve, null, [__this.parser.parseCycle(doc, urlHash)]);
+				Function.maybeCall(resolve, null, [__this.parser.parseCycle(doc, urlHash), __this.parser.parseYear(doc)]);
 			}
 		});
 	}
 	
+	/**
+	 * Retrieves the attendance table for the currently logged in student.
+	 * Assures that the student is logged in.
+	 */
 	getAttendance(): Promise {
 		var __this = this;
 		return new Promise((resolve, reject) => {
@@ -249,8 +278,9 @@ class Retriever {
 	}
 	
 	isLoggedIn(): boolean {
-		return this.lastResponseTime != null &&
-			this.lastResponseTime + 1000 * 60 * 5 >= +new Date();
+		return (this.lastResponseTime != null &&
+			this.lastResponseTime + 1000 * 60 * 5 >= +new Date()) ||
+			(!this.credentials.district.api.cycle.requiresYearLoaded && this.isYearLoaded());
 	}
 	
 	isYearLoaded(): boolean {

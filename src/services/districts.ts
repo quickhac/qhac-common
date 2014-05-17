@@ -109,7 +109,9 @@ module Districts {
 					});
 					return events;
 				}
-			}
+			},
+			registerUrl: "https://accesscenter.roundrockisd.org/HomeAccess/Content/Register/Default2.aspx",
+			forgotPasswordUrl: "https://accesscenter.roundrockisd.org/HomeAccess/Content/Register/ForgotCredentials.aspx"
 		}
 	}
 
@@ -117,7 +119,6 @@ module Districts {
 	export var austin: District = {
 		id: 'austin',
 		name: 'Austin ISD',
-		driver: 'gradespeed',
 		examWeight: 25,
 		weightedGpaOffset: 0,
 		columnOffsets: {
@@ -231,7 +232,9 @@ module Districts {
 					
 					return events;
 				}
-			}
+			},
+			registerUrl: "https://gradespeed.austinisd.org/pc/ParentSignup.aspx?DistrictID=227901",
+			forgotPasswordUrl: "https://gradespeed.austinisd.org/pc/ForgotPW.aspx?DistrictID=227901"
 		}
 	}
 	

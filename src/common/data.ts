@@ -5,9 +5,20 @@ interface Account {
 	credentials: Credentials;
 	students: Student[];
 }
+
+interface UnlinkedAccount {
+	id: string;
+	credentials: UnlinkedCredentials;
+	students: UnlinkedStudent[];
+}
 	
 	interface Credentials {
 		district: District;
+		username: string;
+		password: string; }
+
+	interface UnlinkedCredentials {
+		district: string;
 		username: string;
 		password: string; }
 
@@ -21,11 +32,20 @@ interface Account {
 		attendance: Attendance;
 		preferences: StudentPrefs }
 
+	interface UnlinkedStudent {
+		id: string;
+		name: string;
+		school: string;
+		studentId: string;
+	}
+
 		interface StudentPrefs {
-			notifsOn: boolean;
+			notifLevel: NotificationLevel;
 			gpaWeightedOn: boolean;
 			gpaUnweightedOn: boolean;
 		}
+
+			enum NotificationLevel { NONE, CYCLE_DROP, CYCLE_CHANGE, ASSIGNMENT }
 	
 		interface GPAData {
 			prevGpa: number /* float */;
@@ -38,11 +58,14 @@ interface Account {
 		interface Grades {
 			lastUpdated: number /* date */;
 			changedGrades: GradeChange[];
+			useLetterGrades: boolean;
 			courses: Course[]; }
 	
 			interface GradeChange {
 				id: string /* Course.id / Assignment.id */;
+				timestamp: number /* date */;
 				type: GradeChangeType;
+				newGrade: string;
 				read: boolean; }
 	
 				enum GradeChangeType { NEW, UP, DOWN }
@@ -56,6 +79,8 @@ interface Account {
 				semesters: Semester[]; }
 	
 				interface Semester {
+					hasExam: boolean;
+					hasAverage: boolean;
 					average: number /* int */;
 					examGrade: number /* int */;
 					examIsExempt: boolean;
@@ -117,7 +142,9 @@ interface District {
 		selectStudent: APISelectStudent;
 		year: APIYear;
 		cycle: APICycle;
-		attendance: APIAttendance; }
+		attendance: APIAttendance;
+		registerUrl: string;
+		forgotPasswordUrl: string; }
 
 		interface APILogin {
 			loadUrl: string;

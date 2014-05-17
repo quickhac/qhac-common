@@ -310,7 +310,7 @@ class Parser {
 	}
 
 	// only call this function on the grades page
-	parseStudentInfo(doc: Document, id: string): Student {
+	parseStudentInfo(doc: Document): Student {
 		Log.err('unimplemented');
 		return {
 			id: null,

@@ -1,13 +1,19 @@
 class Calculator {
 	
 	district: District;
+	student: Student;
 	
-	constructor(district: District) {
+	constructor(district: District, student: Student) {
 		this.district = district;
+		this.student = student;
 	}
 	
 	setDistrict(district: District): void {
 		this.district = district;
+	}
+	
+	setStudent(student: Student): void {
+		this.student = student;
 	}
 
 	/** Calculates a semester average from the cycles and exam grade provided */
@@ -83,6 +89,36 @@ class Calculator {
 
 		// add up points earned
 		return ecAssignments.map(a => a.ptsEarned).sum() || 0;
+	}
+	
+	/** Calculates the unweighted grade point average of a list of courses. */
+	unweightedGPA(courses: Course[]): number {
+		return courses.map(
+			(x) => x.semesters.map(
+				(y) => this.gradePoint(y.average))
+			).flatten().average();
+	}
+	
+	/** Calculates the weighted grade point average of a list of courses. */
+	weightedGPA(courses: Course[]): number {
+		var offsets = courses.map(
+			(x) => this.student.gpaData.weightedCourses.indexOf(x.id) === -1 ?
+				0 : this.district.weightedGpaOffset);
+		return courses.pmap(offsets,
+			(x, o) => x.semesters.map(
+				(y) => this.gradePoint(y.average) + o)
+			).flatten().average();
+	}
+	
+	/**
+	 * Finds the grade point from a grade. To find the unweighted grade point,
+	 * specify offset = 0. To find weighted on 5.0 scale, specify offset = 1. To
+	 * find weighted on 6.0 scale, specify offset = 2.
+	 */
+	gradePoint(grade: number): number {
+		if (isNaN(grade)) return NaN;
+		if (grade < 70) return 0;
+		return Math.min((grade - 60) / 10, 4);
 	}
 
 }
