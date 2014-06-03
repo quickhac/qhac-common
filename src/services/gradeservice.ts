@@ -4,6 +4,94 @@ enum LoginStatus {
 	LOGGED_IN = 2
 }
 
+/**
+ * GradeService is the only object you have to manually keep track of in qhac-common.
+ * It is a singleton, since it tracks GradeSpeed login state and assumes no
+ * interference.
+ * 
+ * # Logging in
+ * 
+ * 1. attemptLogin(district, username, password).
+ * 1a. If the success callback in the first step was passed an array of students
+ *     as the first argument, call attemptSelectStudent(studentId) to select
+ *     a student. The selection process should involve user interaction.
+ * 2. If (1) did not return an array of students or you called (1a), you will
+ *     now be passed (grades: Grades, student: Student) with grades and student
+ *     data into your callback to (1) or (1a), whichever one you called. The
+ *     GradeService has automatically set your identity to the newly logged in
+ *     account, so you can call all other methods as that account and student.
+ * 
+ * # Selecting your identity
+ * 
+ * You will need to select the account and student you want to use with
+ * GradeService to interact with any of the functions mentioned below. To do so,
+ * call selectIdentity(accountId, studentId). You must do this every time you
+ * want to use a different identity. The only exception is if you are logging in
+ * via attemptLogin/attemptSelectStudent, which which will select your identity
+ * automatically once successfully logged in.
+ * 
+ * You may retrieve your identity by calling getAccount(), which gets the object
+ * containing your active account, and getStudent(), which gets the object
+ * containing your active student.
+ * 
+ * # Loading data from storage/cache
+ * 
+ * The getGradesYear, getGradesCycle, and getAttendance methods return the
+ * grades or attendance for the current student from the in-memory cache. These
+ * are read from the database when GradeService is created. Since these are by-
+ * reference objects from the cache, they should be treated as immutable so as
+ * to not overwrite any of the cache.
+ * 
+ * # Loading data from GradeSpeed
+ * 
+ * The loadGradesYear, loadGradesCycle, and loadAttendance methods retrieve the
+ * grades or attendance from GradeSpeed for the currently selected account and
+ * student.
+ * 
+ * loadGradesYear yields:
+ *     grades: Grades, the just-updated grades
+ *     changes: GradeChange[], what changed in the last update
+ * loadGradesCycle yields:
+ *     grades: Cycle, the just-updated cycle grades
+ *     cycleChanges: GradeChange[], what changed in the cycle in the last update
+ *     gradesYear: Grades, the just-updated year grades
+ *     yearChanges: GradeChange[], what changed in the year in the last update
+ * loadAtendance yields:
+ *     events: AttendanceEvent[], all of the attendance events for the student
+ * 
+ * # Using the grade calculator
+ * 
+ * To enable grade editing, you need to use the grade calculator by accesing the
+ * GradeService's calculator attribute. You may use the following methods in the
+ * calculator:
+ * - semesterAverage
+ * - cycleAverage
+ * - categoryAverage
+ * - categoryBonuses
+ * - weightedGPA
+ * - unweightedGPA
+ * 
+ * These method names should be self-explanatory.
+ * 
+ * # Changing preferences
+ * 
+ * To change app-wide preferences, use the GradeService's store attribute. The
+ * following methods are safe to use:
+ * - getPreferences()
+ * - setPreferences(prefs)
+ * - setPreference(key, value)
+ * 
+ * # TODO
+ * 
+ * The following methods need to be implemented:
+ * - addCourseToGPABlacklist(courseId)
+ * - addCourseToGPAWhitelist(courseId)
+ * - removeCourseFromGPABlacklist(courseId)
+ * - removeCourseFrom(GPAWhitelist(courseId)
+ * - getStudentPrefs()
+ * - setStudentPrefs(prefs)
+ * - setStudentPref(key, value)
+ */
 class GradeService {
 	accountId: string;
 	studentId: string;
@@ -82,6 +170,7 @@ class GradeService {
 						student.grades = grades;
 						student.studentId = "";
 						this.newAccount.students = [student];
+						Function.maybeCall(resolve, null, [grades, student]);
 					});
 				}
 			}, reject);
@@ -101,6 +190,7 @@ class GradeService {
 					this.newAccount.students[studentIndex] = student;
 					this.accountId = this.newAccount.id;
 					this.cache.push(this.newAccount);
+					Function.maybeCall(resolve, null, [grades, student]);
 				});
 			}, reject);
 		});
@@ -146,6 +236,10 @@ class GradeService {
 		return null;
 	}
 	
+	getAttendance(): Attendance {
+		return this.getStudent().attendance;
+	}
+	
 	loadGradesYear(): Promise {
 		return new Promise((resolve: (grades: Grades, changes: GradeChange[]) => any,
 				reject: (e: Error) => any) => {
@@ -173,7 +267,7 @@ class GradeService {
 	
 	loadGradesCycle(urlHash: string): Promise {
 		return new Promise((resolve: (cycle: Cycle, cycleChanges: GradeChange[],
-				courses: Course[], yearChanges: GradeChange[]) => any,
+				grades: Grades, yearChanges: GradeChange[]) => any,
 				reject: (e: Error) => any) => {
 			var student = this.getStudent();
 			this.retriever.getCycle(urlHash).then((cycle: Cycle, grades: Grades) => {

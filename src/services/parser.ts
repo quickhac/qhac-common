@@ -400,11 +400,20 @@ class Parser {
 
 	// only call this function on the grades page
 	parseStudentInfo(doc: Document): Student {
-		Log.err('unimplemented');
+		var $header = doc.find('.StudentHeader').item(0),
+			nameSplits = $header.find('.StudentName').item(0).innerText.split(', ');
 		return {
 			id: null,
-			name: null,
-			school: null,
+			// the following will consistently return the first name, since:
+			// 'First M Last' [split on ', '] -> ['First M Last'], take last
+			// 'First M Last' [split on ' '] -> ['First', 'M', 'Last'], take first yields first name
+			//     and:
+			// 'Last, First M' [split on ', '] -> ['Last', 'First M'], take last
+			// 'First M' [split on ' '] -> ['First', 'M'], take first yields first name
+			name: nameSplits[nameSplits.length - 1].split(' ')[0],
+			// the second child node of the header will always be a text node
+			// with the school name in parentheses
+			school: $header.childNodes.item(1).innerText.match('\((.*)\)')[1],
 			studentId: null,
 			gpaData: null,
 			grades: null,
