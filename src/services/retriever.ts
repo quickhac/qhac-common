@@ -170,7 +170,7 @@ class Retriever {
 	 */
 	getYear(): Promise {
 		var __this = this;
-		return new Promise((resolve: (courses: Course[]) => any, reject: (e: Error) => any) => {
+		return new Promise((resolve: (grades: Grades, student: Student) => any, reject: (e: Error) => any) => {
 			var api = __this.credentials.district.api;
 			
 			if (typeof __this.student === 'undefined' || __this.student === null) {
@@ -215,7 +215,7 @@ class Retriever {
 	 */
 	getCycle(urlHash: string): Promise {
 		var __this = this;
-		return new Promise((resolve: (cycle: Cycle) => any, reject: (e: Error) => any) => {
+		return new Promise((resolve: (cycle: Cycle, grades: Grades) => any, reject: (e: Error) => any) => {
 			var api = __this.credentials.district.api;
 			
 			__this.assureYearLoadRequirementsSatisfied().then(sendCycleRequest, reject);

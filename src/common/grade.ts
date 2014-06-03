@@ -35,4 +35,14 @@ module GradeValue {
 		}
 		return 'F';
 	}
+	
+	export function parseInt(grade: string): number {
+		if (typeof letters[grade] === 'undefined') return parseInt(grade);
+		else return letters[grade];
+	}
+	
+	export function parseFloat(grade: string): number {
+		if (typeof letters[grade] === 'undefined') return parseFloat(grade);
+		else return letters[grade];
+	}
 }

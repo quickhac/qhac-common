@@ -77,14 +77,9 @@ class GradeService {
 					Function.maybeCall(resolve, null, [choices]);
 				} else {
 					this.loginStatus = LoginStatus.LOGGED_IN;
-					this.retriever.getYear().then((courses: Course[], student: Student, useLetterGrades: boolean) => {
+					this.retriever.getYear().then((grades: Grades, student: Student) => {
 						student.id = CryptoJS.SHA1(this.newAccount.id + '|0').toString();
-						student.grades = {
-							lastUpdated: +new Date(),
-							courses: courses,
-							changedGrades: [],
-							useLetterGrades: useLetterGrades
-						};
+						student.grades = grades;
 						student.studentId = "";
 						this.newAccount.students = [student];
 					});
@@ -93,11 +88,20 @@ class GradeService {
 		});
 	}
 	
-	// TODO: attemptSelectStudent
+	// TODO: verify
 	attemptSelectStudent(studentId: string): Promise {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.retriever.selectStudent(studentId).then(() => {
 				this.loginStatus = LoginStatus.LOGGED_IN;
+				this.retriever.getYear().then((grades: Grades, student: Student) => {
+					student.id = CryptoJS.SHA1(this.newAccount.id + '|' + studentId).toString();
+					student.grades = grades;
+					student.studentId = studentId;
+					var studentIndex = this.newAccount.students.map(s => s.studentId).indexOf(studentId);
+					this.newAccount.students[studentIndex] = student;
+					this.accountId = this.newAccount.id;
+					this.cache.push(this.newAccount);
+				});
 			}, reject);
 		});
 	}
@@ -143,13 +147,13 @@ class GradeService {
 	}
 	
 	loadGradesYear(): Promise {
-		return new Promise((resolve: (courses: Course[], changes: GradeChange[]) => any,
+		return new Promise((resolve: (grades: Grades, changes: GradeChange[]) => any,
 				reject: (e: Error) => any) => {
 			var student = this.getStudent();
-			this.retriever.getYear().then((courses: Course[]) => {
-				var changes = this.updateGradesYear(courses, student);
+			this.retriever.getYear().then((grades: Grades) => {
+				var changes = this.updateGradesYear(grades.courses, student);
 				this.store.updateStudent(student).then(() => {
-					Function.maybeCall(resolve, null, [courses, changes]);
+					Function.maybeCall(resolve, null, [grades, changes]);
 				}, reject);
 			}, reject);
 		});
@@ -172,11 +176,11 @@ class GradeService {
 				courses: Course[], yearChanges: GradeChange[]) => any,
 				reject: (e: Error) => any) => {
 			var student = this.getStudent();
-			this.retriever.getCycle(urlHash).then((cycle: Cycle, courses: Course[]) => {
-				var yearChanges = this.updateGradesYear(courses, student);
+			this.retriever.getCycle(urlHash).then((cycle: Cycle, grades: Grades) => {
+				var yearChanges = this.updateGradesYear(grades.courses, student);
 				var cycleChanges = this.updateGradesCycle(cycle, student);
 				this.store.updateStudent(student).then(() => {
-					Function.maybeCall(resolve, null, [cycle, cycleChanges, courses, yearChanges]);
+					Function.maybeCall(resolve, null, [cycle, cycleChanges, grades, yearChanges]);
 				});
 			});
 		});

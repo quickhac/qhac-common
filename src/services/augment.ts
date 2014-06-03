@@ -161,6 +161,7 @@ class Augment {
 			urlHash: base.urlHash,
 			lastUpdated: specific.lastUpdated,
 			changedGrades: specific.changedGrades,
+			usesLetterGrades: specific.usesLetterGrades,
 			average: base.average,
 			title: specific.title,
 			categories: specific.categories

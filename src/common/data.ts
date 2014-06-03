@@ -58,7 +58,9 @@ interface UnlinkedAccount {
 		interface Grades {
 			lastUpdated: number /* date */;
 			changedGrades: GradeChange[];
-			useLetterGrades: boolean;
+			usesLetterGrades: boolean;
+			hasExams: boolean;
+			hasSemesterAverages: boolean;
 			courses: Course[]; }
 	
 			interface GradeChange {
@@ -79,8 +81,6 @@ interface UnlinkedAccount {
 				semesters: Semester[]; }
 	
 				interface Semester {
-					hasExam: boolean;
-					hasAverage: boolean;
 					average: number /* int */;
 					examGrade: number /* int */;
 					examIsExempt: boolean;
@@ -90,6 +90,7 @@ interface UnlinkedAccount {
 						urlHash: string /* Base64 */;
 						lastUpdated: number /* date */;
 						changedGrades: GradeChange[];
+						usesLetterGrades: boolean;
 						average: number /* int */;
 						title: string;
 						categories: Category[]; }

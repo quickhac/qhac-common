@@ -1,6 +1,8 @@
 interface SemesterParams {
 	semesters: number;
 	cyclesPerSemester: number;
+	hasExams: boolean;
+	hasSemesterAverages: boolean;
 }
 
 class Parser {
@@ -44,25 +46,77 @@ class Parser {
 		// There is no course ID. Return nothing.
 		return null;
 	}
+	
+	parseSemesterParams($headerCells: NodeList): SemesterParams {
+		var semParams: SemesterParams = {
+			semesters: 1,
+			cyclesPerSemester: 0,
+			hasExams: false,
+			hasSemesterAverages: false
+		};
+		
+		$headerCells.toArray().forEach(($cell: Node) => {
+			var text = $cell.innerText, matches = [];
+			
+			if (matches = text.match(/cycle (\d+)/i)) {
+				// Cycle #
+				semParams.cyclesPerSemester = parseInt(matches[1]);
+			} else if (matches = text.match(/exam (\d+)/i)) {
+				// Exam #
+				semParams.hasExams = true;
+			} else if (matches = text.match(/semester (\d+)/i)) {
+				// Semester #
+				semParams.hasSemesterAverages = true;
+				semParams.semesters = parseInt(matches[1]);
+			}
+		});
+		
+		return semParams;
+	}
+	
+	/** Returns `true` if the grades table uses letter grades. */
+	checkForLetterGrades($rows: Node[]): boolean {
+		var $row: Node[], rowsLen = $rows.length, $cell: Node, cellsLen: number;
+		for (var i = 0; i < rowsLen; i++) {
+			$row = $rows[i].find('td').toArray();
+			cellsLen = $row.length;
+			for (var j = this.district.columnOffsets.courses; j < cellsLen; j++) {
+				$cell = $row[j];
+				if ($cell.innerText.match(/[ABCDF]/))
+					return true;
+				else if ($cell.innerText.match(/\d/))
+					return false;
+			}
+		}
+		
+		return false;
+	}
 
 	/** Gets information for all courses */
-	parseYear(doc: Document): Course[] {
+	parseYear(doc: Document): Grades {
 		var _this = this;
 		// find the grade table
 		var $gradeTable = doc.find('.DataTable')[0];
 
 		// make semester parameters
-		// TODO: support elementary school
 		var $headerCells = $gradeTable.find('tr.TableHeader')[0].find('th');
-		var sem = parseInt($headerCells[$headerCells.length - 1].innerText.match(/\d+/)[0]);
-		var cyc = parseInt($headerCells[$headerCells.length - 3].innerText.match(/\d+/)[0]) / sem;
-		var semParams: SemesterParams = {semesters: sem, cyclesPerSemester: cyc};
+		var semParams = this.parseSemesterParams($headerCells);
 
 		// find each course
-		var $rows = $gradeTable.find('tr.DataRow, tr.DataRowAlt');
+		var $rows = $gradeTable.find('tr.DataRow, tr.DataRowAlt')
+			// filter out cumulative GPA row if any
+			.toArray().filter((r: Node) =>
+				!!r.find('td').item(0).innerText.match(/cumulative gpa/i));
 
 		// parse each course
-		return $rows.map((r : Node) => parseCourse(r));
+		return {
+			lastUpdated: +new Date(),
+			changedGrades: null,
+			usesLetterGrades: this.checkForLetterGrades($rows),
+			hasExams: semParams.hasExams,
+			hasSemesterAverages: semParams.hasSemesterAverages,
+			courses: $rows.map((r : Node) => parseCourse(r))
+		};
 		
 		function parseCourse($row: Node): Course {
 			// find the cells in this row
@@ -79,17 +133,31 @@ class Parser {
 			var period = parseInt($cells[_this.district.columnOffsets.period].innerText, 10);
 	
 			// parse semesters
-			var semesters: Semester[] = [];
+			var semesters: Semester[] = [],
+				cyclesStartOffset = _this.district.columnOffsets.courses,
+				perSemesterOffset = semParams.cyclesPerSemester +
+					(semParams.hasExams ? 1 : 0) +
+					(semParams.hasSemesterAverages ? 1 : 0);
 			for (var i = 0; i < semParams.semesters; i++) {
 				// get cells for the semester
-				var $semesterCells = [];
-				// find the cells that are pertinent to this semester
-				// $semesterCells becomes [cycle, cycle, ... , cycle, exam, semester] after filtering
-				var cellOffset = _this.district.columnOffsets.courses + i * (semParams.cyclesPerSemester + 2);
-				for (var j = 0; j < semParams.cyclesPerSemester + 2; j++)
-					$semesterCells[j] = $cells[cellOffset + j];
+				var $cycles = [], $exam: Node, $semester: Node;
+				
+				// find the cycles in the semester
+				var cyclesOffset = cyclesStartOffset + i * perSemesterOffset;
+				for (var j = 0; j < semParams.cyclesPerSemester; j++)
+					$cycles[j] = $cells[cyclesOffset + j];
+				
+				var cyclesEndOffset = cyclesOffset + semParams.cyclesPerSemester;
+				// find the exam and semester average cells, if any
+				if (semParams.hasExams) {
+					$exam = $cells[cyclesEndOffset + 1];
+					if (semParams.hasSemesterAverages)
+						$semester = $cells[cyclesEndOffset + 2];
+				} else if (semParams.hasSemesterAverages)
+					$semester = $cells[cyclesEndOffset + 1];
+				
 				// parse the semester
-				semesters[i] = parseSemester($semesterCells);
+				semesters[i] = parseSemester($cycles, $exam, $semester);
 			}
 	
 			return {
@@ -101,15 +169,14 @@ class Parser {
 				semesters: semesters
 			}
 			
-			function parseSemester($cells: Node[]): Semester {
+			function parseSemester($cycles: Node[], $exam: Node, $semester: Node): Semester {
 				// parse cycles
 				var cycles: Cycle[] = [];
 				for (var i = 0; i < semParams.cyclesPerSemester; i++) {
-					cycles[i] = parseCycleInYear($cells[i]);
+					cycles[i] = parseCycleInYear($cycles[i]);
 				}
 		
 				// parse exam grade
-				var $exam = $cells[semParams.cyclesPerSemester];
 				var examGrade = NaN, examIsExempt = false;
 				if ($exam.innerText === '' || $exam.innerText === '&nbsp;') {}
 				else if ($exam.innerText === 'EX' || $exam.innerText === 'Exc')
@@ -120,7 +187,7 @@ class Parser {
 				// parse semester average
 				// TODO: calculate semester average instead of parsing it? because
 				// GradeSpeed sometimes messes up
-				var semesterAverage = parseInt($cells[semParams.cyclesPerSemester + 1].innerText);
+				var semesterAverage = parseInt($semester.innerText);
 		
 				// return a semester
 				return {
@@ -140,13 +207,14 @@ class Parser {
 						urlHash: null,
 						lastUpdated: null,
 						changedGrades: null,
+						usesLetterGrades: null,
 						average: NaN,
 						title: null,
 						categories: null
 					};
 			
 					// find a grade
-					var average = parseInt($link[0].innerText);
+					var average = GradeValue.parseInt($link[0].innerText);
 					var urlHash = decodeURIComponent(_this.GRADE_CELL_URL_REGEX.exec($link[0].attr('href'))[1]);
 			
 					// return it
@@ -154,6 +222,7 @@ class Parser {
 						urlHash: urlHash,
 						lastUpdated: null,
 						changedGrades: null,
+						usesLetterGrades: null,
 						average: average,
 						title: null,
 						categories: null
@@ -196,8 +265,12 @@ class Parser {
 		// The first number is the number of points earned on the assignment; the second is
 		// the weight of the assignment within the category.
 		// If the weight is not specified, it is assumed to be 1.
-		if (ptsEarned.indexOf('x') === -1) {
-			ptsEarnedNum = parseFloat(ptsEarned);
+		// Also, sometimes assignments are marked as "Exc" for excused.
+		if (ptsEarned === 'Exc') {
+			ptsEarnedNum = NaN;
+			weight = 1;
+		} else if (ptsEarned.indexOf('x') === -1) {
+			ptsEarnedNum = GradeValue.parseFloat(ptsEarned);
 			weight = 1;
 		} else {
 			var ptsSplit = ptsEarned.split('x');
@@ -205,6 +278,8 @@ class Parser {
 				ptsEarnedNum = NaN;
 				weight = 1;
 			} else {
+				// Don't use GradeValue's parseFloat here since we probably won't
+				// be working with weighted letter grade values.
 				ptsEarnedNum = parseFloat(ptsSplit[0]);
 				weight = parseFloat(ptsSplit[1]);
 			}
@@ -297,12 +372,26 @@ class Parser {
 		// get category names
 		var catNames = doc.find('span.CategoryName');
 		var $categories = doc.find('.DataTable').splice(1);
+		
+		// try to find a letter grade
+		function checkForLetterGrades($nodes: Node[]) {
+			var text: string, len = $nodes.length;
+			for (var i = 0; i < len; i++) {
+				text = $nodes[i].innerText;
+				if (text.match(/[ABCDF]/i))
+					return true;
+				else if (text.match(/\d+/))
+					return false;
+			}
+			return false;
+		}
 
 		return {
 			lastUpdated: null,
 			changedGrades: null,
 			title: classNameMatches[1],
 			urlHash: urlHash,
+			usesLetterGrades: checkForLetterGrades(doc.find('.AssignmentGrade').toArray()),
 			period: parseInt(classNameMatches[2], 10),
 			average: parseInt(doc.find('.CurrentAverage')[0].innerText.match(/\d+/)[0]),
 			categories: $categories.pmap(catNames.toArray(), (c, n) => this.parseCategory(n, c, urlHash))
