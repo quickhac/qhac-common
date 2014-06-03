@@ -4,13 +4,17 @@ The QuickHAC Common library aims to be a robust reference implementation of an A
 
 Currently, Round Rock ISD and Austin ISD are supported, although new districts should be easy to add (see `src/districts.ts`).
 
+## Requirements
+TypeScript
+TypeDoc, which is installed by `npm install typedoc --global` (you might need sudo).
+
 ## Compiling
 
-Run `make prepare` once to create the `build\` directory (you only need to do this once) and then run `make` to compile.
+Run `make prepare` once to create the `build\` directory (you only need to do this once) and then run `make` to compile and build the documentation.
 
 ## Usage
 
-See the Wiki for details on how to use qhac-common. Or, read the source code itself; it's not that hard to read (I hope).
+See the Wiki for details on how to use qhac-common. Or, read the source code itself; it's not that hard to read (I hope). Additionally, there is documentation in the doc/ folder, but it is a bit messy. To see the API for GradeService, click on "Globals" on the left side, and under "Classes" click on GradeService. NOTE: This cannot run on node.js, because it relies on XHR and DOM Parsing.
 
 ## License
 
