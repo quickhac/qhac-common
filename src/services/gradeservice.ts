@@ -171,7 +171,7 @@ class GradeService {
 						student.studentId = "";
 						this.newAccount.students = [student];
 						Function.maybeCall(resolve, null, [grades, student]);
-					});
+					}, reject);
 				}
 			}, reject);
 		});
