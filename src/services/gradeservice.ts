@@ -165,11 +165,25 @@ class GradeService {
 					Function.maybeCall(resolve, null, [choices]);
 				} else {
 					this.loginStatus = LoginStatus.LOGGED_IN;
+					var student = {
+						id: CryptoJS.SHA1(this.newAccount.id + '|0').toString(),
+						name: '',
+						school: '',
+						studentId: '',
+						gpaData: null,
+						grades: null,
+						attendance: null,
+						preferences: null
+					};
+					this.calculator.setStudent(student);
+					this.retriever.setStudent(student);
 					this.retriever.getYear().then((grades: Grades, student: Student) => {
 						student.id = CryptoJS.SHA1(this.newAccount.id + '|0').toString();
 						student.grades = grades;
 						student.studentId = "";
 						this.newAccount.students = [student];
+						this.calculator.setStudent(student);
+						this.retriever.setStudent(student);
 						Function.maybeCall(resolve, null, [grades, student]);
 					}, reject);
 				}
@@ -182,6 +196,18 @@ class GradeService {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.retriever.selectStudent(studentId).then(() => {
 				this.loginStatus = LoginStatus.LOGGED_IN;
+				var student = {
+					id: CryptoJS.SHA1(this.newAccount.id + '|' + studentId).toString(),
+					name: '',
+					school: '',
+					studentId: studentId,
+					gpaData: null,
+					grades: null,
+					attendance: null,
+					preferences: null
+				};
+				this.calculator.setStudent(student);
+				this.retriever.setStudent(student);
 				this.retriever.getYear().then((grades: Grades, student: Student) => {
 					student.id = CryptoJS.SHA1(this.newAccount.id + '|' + studentId).toString();
 					student.grades = grades;

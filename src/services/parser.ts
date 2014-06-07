@@ -413,7 +413,7 @@ class Parser {
 			name: nameSplits[nameSplits.length - 1].split(' ')[0],
 			// the second child node of the header will always be a text node
 			// with the school name in parentheses
-			school: $header.childNodes.item(1).innerText.match('\((.*)\)')[1],
+			school: $header.childNodes.item(1).data.match(/\((.*)\)/)[1],
 			studentId: null,
 			gpaData: null,
 			grades: null,
