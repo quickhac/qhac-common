@@ -141,6 +141,7 @@ class GradeService {
 		return true;
 	}
 	
+	// spread: (choices: Student[]) OR (grades: Grades, student: Student)
 	attemptLogin(district: District, username: string, password: string): Promise {
 		this.loginStatus = LoginStatus.LOGGING_IN;
 		this.newAccount = {
@@ -162,7 +163,7 @@ class GradeService {
 			this.retriever.login().then((choices: Student[]) => {
 				if (choices !== null) {
 					this.newAccount.students = choices;
-					resolve.apply(null, [choices]);
+					resolve.call(null, [choices]);
 				} else {
 					this.loginStatus = LoginStatus.LOGGED_IN;
 					var student = {
@@ -177,14 +178,14 @@ class GradeService {
 					};
 					this.calculator.setStudent(student);
 					this.retriever.setStudent(student);
-					this.retriever.getYear().then((grades: Grades, student: Student) => {
+					this.retriever.getYear().spread((grades: Grades, student: Student) => {
 						student.id = CryptoJS.SHA1(this.newAccount.id + '|0').toString();
 						student.grades = grades;
 						student.studentId = "";
 						this.newAccount.students = [student];
 						this.calculator.setStudent(student);
 						this.retriever.setStudent(student);
-						resolve.apply(null, [grades, student]);
+						resolve.call(null, [grades, student]);
 					}, reject);
 				}
 			}, reject);
@@ -192,6 +193,7 @@ class GradeService {
 	}
 	
 	// TODO: verify
+	// spread: (grades: Grades, student: Student)
 	attemptSelectStudent(studentId: string): Promise {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.retriever.selectStudent(studentId).then(() => {
@@ -208,7 +210,7 @@ class GradeService {
 				};
 				this.calculator.setStudent(student);
 				this.retriever.setStudent(student);
-				this.retriever.getYear().then((grades: Grades, student: Student) => {
+				this.retriever.getYear().spread((grades: Grades, student: Student) => {
 					student.id = CryptoJS.SHA1(this.newAccount.id + '|' + studentId).toString();
 					student.grades = grades;
 					student.studentId = studentId;
@@ -216,7 +218,7 @@ class GradeService {
 					this.newAccount.students[studentIndex] = student;
 					this.accountId = this.newAccount.id;
 					this.cache.push(this.newAccount);
-					resolve.apply(null, [grades, student]);
+					resolve.call(null, [grades, student]);
 				});
 			}, reject);
 		});
@@ -266,14 +268,15 @@ class GradeService {
 		return this.getStudent().attendance;
 	}
 	
+	// spread: (grades: Grades, changes: GradeChange[])
 	loadGradesYear(): Promise {
-		return new Promise((resolve: (grades: Grades, changes: GradeChange[]) => any,
+		return new Promise((resolve: Function,
 				reject: (e: Error) => any) => {
 			var student = this.getStudent();
-			this.retriever.getYear().then((grades: Grades) => {
+			this.retriever.getYear().spread((grades: Grades) => {
 				var changes = this.updateGradesYear(grades.courses, student);
 				this.store.updateStudent(student).then(() => {
-					resolve.apply(null, [grades, changes]);
+					resolve.call(null, [grades, changes]);
 				}, reject);
 			}, reject);
 		});
@@ -291,16 +294,15 @@ class GradeService {
 		return changes;
 	}
 	
+	// spread: (cycle: Cycle, cycleChanges: GradeChange[], grades: Grades, yearChanges: GradeChange[])
 	loadGradesCycle(urlHash: string): Promise {
-		return new Promise((resolve: (cycle: Cycle, cycleChanges: GradeChange[],
-				grades: Grades, yearChanges: GradeChange[]) => any,
-				reject: (e: Error) => any) => {
+		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			var student = this.getStudent();
-			this.retriever.getCycle(urlHash).then((cycle: Cycle, grades: Grades) => {
+			this.retriever.getCycle(urlHash).spread((cycle: Cycle, grades: Grades) => {
 				var yearChanges = this.updateGradesYear(grades.courses, student);
 				var cycleChanges = this.updateGradesCycle(cycle, student);
 				this.store.updateStudent(student).then(() => {
-					resolve.apply(null, [cycle, cycleChanges, grades, yearChanges]);
+					resolve.call(null, [cycle, cycleChanges, grades, yearChanges]);
 				});
 			});
 		});

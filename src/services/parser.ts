@@ -64,12 +64,14 @@ class Parser {
 			} else if (matches = text.match(/exam (\d+)/i)) {
 				// Exam #
 				semParams.hasExams = true;
-			} else if (matches = text.match(/semester (\d+)/i)) {
+			} else if (matches = text.match(/sem (\d+)/i)) {
 				// Semester #
 				semParams.hasSemesterAverages = true;
 				semParams.semesters = parseInt(matches[1]);
 			}
 		});
+		
+		semParams.cyclesPerSemester /= semParams.semesters;
 		
 		return semParams;
 	}
@@ -106,7 +108,7 @@ class Parser {
 		var $rows = $gradeTable.find('tr.DataRow, tr.DataRowAlt')
 			// filter out cumulative GPA row if any
 			.toArray().filter((r: Node) =>
-				!!r.find('td').item(0).innerText.match(/cumulative gpa/i));
+				!r.find('td').item(0).innerText.match(/cumulative gpa/i));
 
 		// parse each course
 		return {
@@ -150,11 +152,11 @@ class Parser {
 				var cyclesEndOffset = cyclesOffset + semParams.cyclesPerSemester;
 				// find the exam and semester average cells, if any
 				if (semParams.hasExams) {
-					$exam = $cells[cyclesEndOffset + 1];
+					$exam = $cells[cyclesEndOffset];
 					if (semParams.hasSemesterAverages)
-						$semester = $cells[cyclesEndOffset + 2];
+						$semester = $cells[cyclesEndOffset + 1];
 				} else if (semParams.hasSemesterAverages)
-					$semester = $cells[cyclesEndOffset + 1];
+					$semester = $cells[cyclesEndOffset];
 				
 				// parse the semester
 				semesters[i] = parseSemester($cycles, $exam, $semester);

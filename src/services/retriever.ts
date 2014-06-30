@@ -167,10 +167,12 @@ class Retriever {
 	 * Retrieves the year table of grades for the currently logged in student.
 	 * Attempts to log in if the last call to the server was longer than five
 	 * minutes ago.
+	 * 
+	 * spread: (grades: Grades, student: Student)
 	 */
 	getYear(): Promise {
 		var __this = this;
-		return new Promise((resolve: (grades: Grades, student: Student) => any, reject: (e: Error) => any) => {
+		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			var api = __this.credentials.district.api;
 			
 			if (typeof __this.student === 'undefined' || __this.student === null) {
@@ -201,7 +203,7 @@ class Retriever {
 				__this.lastResponseTime = +new Date();
 				__this.lastGradesResponse = doc;
 				__this.lastGradesResponseTime = +new Date();
-				resolve.apply(null, [__this.parser.parseYear(doc), __this.parser.parseStudentInfo(doc)]);
+				resolve.call(null, [__this.parser.parseYear(doc), __this.parser.parseStudentInfo(doc)]);
 			}
 		})
 	}
@@ -212,10 +214,12 @@ class Retriever {
 	 * the current student is logged in, and if the district server setup
 	 * requires that the year table is loaded before any cycle is loaded, loads
 	 * the year table first.
+	 * 
+	 * spread: (cycle: Cycle, grades: Grades)
 	 */
 	getCycle(urlHash: string): Promise {
 		var __this = this;
-		return new Promise((resolve: (cycle: Cycle, grades: Grades) => any, reject: (e: Error) => any) => {
+		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			var api = __this.credentials.district.api;
 			
 			__this.assureYearLoadRequirementsSatisfied().then(sendCycleRequest, reject);
@@ -239,7 +243,7 @@ class Retriever {
 				__this.lastResponseTime = +new Date();
 				__this.lastGradesResponse = doc;
 				__this.lastGradesResponseTime = +new Date();
-				resolve.apply(null, [__this.parser.parseCycle(doc, urlHash), __this.parser.parseYear(doc)]);
+				resolve.call(null, [__this.parser.parseCycle(doc, urlHash), __this.parser.parseYear(doc)]);
 			}
 		});
 	}

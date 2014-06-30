@@ -1,5 +1,4 @@
 /// <reference path='data.ts'/>
-/// <reference path='func.ts'/>
 
 interface XHRParams {
 	method: string;

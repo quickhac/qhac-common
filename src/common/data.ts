@@ -205,7 +205,8 @@ interface WordArray {
 declare class Promise {
 	constructor(f: Function, e?: Function);
 
-	then(f: Function, e?: Function): Promise;    
+	then(f: Function, e?: Function): Promise;
+	spread(f: Function, e?: Function): Promise;
 }
 
 /** Iterates through all properties that belong to an object. */

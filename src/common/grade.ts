@@ -37,12 +37,12 @@ module GradeValue {
 	}
 	
 	export function parseInt(grade: string): number {
-		if (typeof letters[grade] === 'undefined') return parseInt(grade);
+		if (typeof letters[grade] === 'undefined') return window['parseInt'](grade);
 		else return letters[grade];
 	}
 	
 	export function parseFloat(grade: string): number {
-		if (typeof letters[grade] === 'undefined') return parseFloat(grade);
+		if (typeof letters[grade] === 'undefined') return window['parseFloat'](grade);
 		else return letters[grade];
 	}
 }
