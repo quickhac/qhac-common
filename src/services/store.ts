@@ -51,7 +51,7 @@ class Store {
 		return new Promise((resolve: (accounts: Account[]) => any, reject: (e: Error) => any) => {
 			this.storage.getItem('accounts').then((unlinked: UnlinkedAccount[]) => {
 				if (typeof unlinked === 'undefined' || unlinked === null)
-					Function.maybeCall(resolve, null, [[]]);
+					resolve.apply(null, [[]]);
 				else {
 					// link accounts individually
 					var len = unlinked.length,
@@ -60,7 +60,7 @@ class Store {
 					unlinked.forEach((acc: UnlinkedAccount, idx: number) => {
 						this.linkAccount(acc).then((account: Account) => {
 							accounts[idx] = account;
-							if (++loaded === len) Function.maybeCall(resolve, null, [accounts]);
+							if (++loaded === len) resolve.apply(null, [accounts]);
 						}, reject);
 					});
 				}
@@ -94,7 +94,7 @@ class Store {
 					credentials: this.linkCredentials(unlinked.credentials),
 					students: students
 				};
-				Function.maybeCall(resolve, null, [account]);
+				resolve.apply(null, [account]);
 			}
 		});
 	}
@@ -128,7 +128,7 @@ class Store {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.doesAccountExist(account.id).then((exists: boolean) => {
 				if (exists)
-					Function.maybeCall(reject, null, [new Error('account with that id already exists')]);
+					reject.apply(null, [new Error('account with that id already exists')]);
 				else this.storage.setItem('account-' + account.id, unlinked).then(resolve, reject);
 			}, reject);
 		});
@@ -139,7 +139,7 @@ class Store {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.doesAccountExist(account.id).then((exists: boolean) => {
 				if (!exists)
-					Function.maybeCall(reject, null, [new Error('account with that id does not exist')]);
+					reject.apply(null, [new Error('account with that id does not exist')]);
 				else this.storage.setItem('account-' + account.id, unlinked).then(resolve, reject);
 			}, reject);
 		});
@@ -149,7 +149,7 @@ class Store {
 		return new Promise((resolve: (exists: boolean) => any, reject: (e: Error) => any) => {
 			this.storage.getItem('account-' + id).then((account: UnlinkedAccount) => {
 				var exists = typeof account !== 'undefined' && account !== null;
-				Function.maybeCall(resolve, null, [exists]);
+				resolve.apply(null, [exists]);
 			}, reject);
 		});
 	}
@@ -162,7 +162,7 @@ class Store {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.doesStudentExist(student.id).then((exists: boolean) => {
 				if (exists)
-					Function.maybeCall(reject, null, [new Error('student with that id already exists')]);
+					reject.apply(null, [new Error('student with that id already exists')]);
 				else this.storage.setItem('student-' + student.id, student).then(() => {
 					this.storage.getItem('account-' + accountId).then((account: UnlinkedAccount) => {
 						account.students.push(this.unlinkStudent(student));
@@ -177,7 +177,7 @@ class Store {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.doesStudentExist(student.id).then((exists: boolean) => {
 				if (!exists)
-					Function.maybeCall(reject, null, [new Error('student with that id does not exist')]);
+					reject.apply(null, [new Error('student with that id does not exist')]);
 				else this.storage.setItem('student-' + student.id, student).then(resolve, reject);
 			}, reject);
 		});
@@ -187,7 +187,7 @@ class Store {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.doesStudentExist(id).then((exists: Boolean) => {
 				if (!exists)
-					Function.maybeCall(reject, null, [new Error('student with that id does not exist')]);
+					reject.apply(null, [new Error('student with that id does not exist')]);
 				else this.storage.removeItem('student-' + id).then(resolve, reject);
 			}, reject);
 		});
@@ -197,7 +197,7 @@ class Store {
 		return new Promise((resolve: (exists: boolean) => any, reject: (e: Error) => any) => {
 			this.getStudent(id).then((s: Student) => {
 				var exists = typeof s !== 'undefined' && s !== null;
-				Function.maybeCall(resolve, null, [exists]);
+				resolve.apply(null, [exists]);
 			}, reject);
 		});
 	}
@@ -206,7 +206,7 @@ class Store {
 		return new Promise((resolve: (student: Student) => any, reject: (e: Error) => any) => {
 			this.storage.getItem('state').then((state: State) => {
 				if (typeof state.activeStudent == 'undefined' || state.activeStudent == null)
-					Function.maybeCall(resolve, null, [null]);
+					resolve.apply(null, [null]);
 				else this.storage.getItem('student-' + state.activeStudent).then(resolve, reject);
 			}, reject);
 		});

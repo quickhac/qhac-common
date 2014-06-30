@@ -30,11 +30,11 @@ class XHR {
 				if (_this._xhr.status === 200) {
 					var doc: Document;
 					try { doc = DOMTools.parse(_this._xhr.responseText); } catch (e) {}
-					Function.maybeCall(_this._params.success, _this._xhr, [_this._xhr.responseText, doc]);
+					_this._params.success.apply(_this._xhr, [_this._xhr.responseText, doc]);
 				} else if (_this._xhr.status === 404) {
-					Function.maybeCall(_this._params.fail, _this._xhr, [new Error('404 File Not Found')]);
+					_this._params.fail.apply(_this._xhr, [new Error('404 File Not Found')]);
 				} else if (_this._xhr.status === 500) {
-					Function.maybeCall(_this._params.fail, _this._xhr, [new Error('500 Internal Server Error')]);
+					_this._params.fail.apply(_this._xhr, [new Error('500 Internal Server Error')]);
 				}
 			}
 		}

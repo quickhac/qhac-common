@@ -162,7 +162,7 @@ class GradeService {
 			this.retriever.login().then((choices: Student[]) => {
 				if (choices !== null) {
 					this.newAccount.students = choices;
-					Function.maybeCall(resolve, null, [choices]);
+					resolve.apply(null, [choices]);
 				} else {
 					this.loginStatus = LoginStatus.LOGGED_IN;
 					var student = {
@@ -184,7 +184,7 @@ class GradeService {
 						this.newAccount.students = [student];
 						this.calculator.setStudent(student);
 						this.retriever.setStudent(student);
-						Function.maybeCall(resolve, null, [grades, student]);
+						resolve.apply(null, [grades, student]);
 					}, reject);
 				}
 			}, reject);
@@ -216,7 +216,7 @@ class GradeService {
 					this.newAccount.students[studentIndex] = student;
 					this.accountId = this.newAccount.id;
 					this.cache.push(this.newAccount);
-					Function.maybeCall(resolve, null, [grades, student]);
+					resolve.apply(null, [grades, student]);
 				});
 			}, reject);
 		});
@@ -273,7 +273,7 @@ class GradeService {
 			this.retriever.getYear().then((grades: Grades) => {
 				var changes = this.updateGradesYear(grades.courses, student);
 				this.store.updateStudent(student).then(() => {
-					Function.maybeCall(resolve, null, [grades, changes]);
+					resolve.apply(null, [grades, changes]);
 				}, reject);
 			}, reject);
 		});
@@ -300,7 +300,7 @@ class GradeService {
 				var yearChanges = this.updateGradesYear(grades.courses, student);
 				var cycleChanges = this.updateGradesCycle(cycle, student);
 				this.store.updateStudent(student).then(() => {
-					Function.maybeCall(resolve, null, [cycle, cycleChanges, grades, yearChanges]);
+					resolve.apply(null, [cycle, cycleChanges, grades, yearChanges]);
 				});
 			});
 		});
@@ -343,7 +343,7 @@ class GradeService {
 			this.retriever.getAttendance().then((events: AttendanceEvent[]) => {
 				var augmentedEvents = this.updateAttendance(events, student);
 				this.store.updateStudent(student).then(() => {
-					Function.maybeCall(resolve, null, [augmentedEvents]);
+					resolve.apply(null, [augmentedEvents]);
 				}, reject);
 			}, reject);
 		});

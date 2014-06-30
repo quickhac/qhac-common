@@ -62,7 +62,7 @@ class Retriever {
 			// process the login page
 			function do_login(text: string, doc: Document) {
 				if (!api.login.validateLoginPage(doc)) {
-					Function.maybeCall(reject, null, [new Error('validation failed')]);
+					reject.apply(null, [new Error('validation failed')]);
 					return;
 				}
 				
@@ -78,7 +78,7 @@ class Retriever {
 			// return student choices if there are any
 			function getDisambigChoices(text: string, doc: Document) {
 				if (!api.login.validateAfterLogin(doc)) {
-					Function.maybeCall(reject, null, [new Error('validation failed')]);
+					reject.apply(null, [new Error('validation failed')]);
 					return;
 				}
 				
@@ -103,14 +103,14 @@ class Retriever {
 						resolveChoice(doc);
 					}
 				} else {
-					Function.maybeCall(resolve, null, [null]);
+					resolve.apply(null, [null]);
 				}
 			}
 			
 			function resolveChoice(doc: Document) {
 				if (api.selectStudent.pickerLoadsFromAjax)
 					if (!api.selectStudent.validate(doc)) {
-						Function.maybeCall(reject, null, [new Error('validation failed')]);
+						reject.apply(null, [new Error('validation failed')]);
 						return;
 					} else {
 						_this.lastResponse = doc;
@@ -119,9 +119,9 @@ class Retriever {
 				
 				var choices = api.selectStudent.getChoices(doc);
 				if (typeof _this.student === 'undefined' || _this.student === null)
-					Function.maybeCall(resolve, null, [choices]);
+					resolve.apply(null, [choices]);
 				else if (choices.map(s => s.studentId).indexOf(_this.student.studentId) === -1)
-					Function.maybeCall(reject, null, [new Error('student not under account')]);
+					reject.apply(null, [new Error('student not under account')]);
 				else
 					_this.selectStudent(_this.student.studentId).then(resolve, reject);
 			}
@@ -152,13 +152,13 @@ class Retriever {
 			
 			function _resolve(text: string, doc: Document) {
 				if (!api.login.validateAfterLogin(doc)) {
-					Function.maybeCall(reject, null, [new Error('validation failed')]);
+					reject.apply(null, [new Error('validation failed')]);
 					return;
 				}
 				
 				__this.lastResponse = doc;
 				__this.lastResponseTime = +new Date();
-				Function.maybeCall(resolve, null, []);
+				resolve.apply(null, []);
 			}
 		});
 	}
@@ -174,7 +174,7 @@ class Retriever {
 			var api = __this.credentials.district.api;
 			
 			if (typeof __this.student === 'undefined' || __this.student === null) {
-				Function.maybeCall(reject, null, [new Error('no student loaded')]);
+				reject.apply(null, [new Error('no student loaded')]);
 				return;
 			}
 			
@@ -192,7 +192,7 @@ class Retriever {
 			
 			function _resolve(text: string, doc: Document) {
 				if (!api.year.validate(doc)) {
-					Function.maybeCall(reject, null, [new Error('validation failed')]);
+					reject.apply(null, [new Error('validation failed')]);
 					return;
 				}
 				
@@ -201,7 +201,7 @@ class Retriever {
 				__this.lastResponseTime = +new Date();
 				__this.lastGradesResponse = doc;
 				__this.lastGradesResponseTime = +new Date();
-				Function.maybeCall(resolve, null, [__this.parser.parseYear(doc), __this.parser.parseStudentInfo(doc)]);
+				resolve.apply(null, [__this.parser.parseYear(doc), __this.parser.parseStudentInfo(doc)]);
 			}
 		})
 	}
@@ -232,14 +232,14 @@ class Retriever {
 			
 			function _resolve(text: string, doc: Document) {
 				if (!api.cycle.validate(doc))
-					Function.maybeCall(reject, null, [new Error('validation failed')]);
+					reject.apply(null, [new Error('validation failed')]);
 				
 				if (!api.cycle.requiresYearLoaded)
 					__this.lastResponse = doc;
 				__this.lastResponseTime = +new Date();
 				__this.lastGradesResponse = doc;
 				__this.lastGradesResponseTime = +new Date();
-				Function.maybeCall(resolve, null, [__this.parser.parseCycle(doc, urlHash), __this.parser.parseYear(doc)]);
+				resolve.apply(null, [__this.parser.parseCycle(doc, urlHash), __this.parser.parseYear(doc)]);
 			}
 		});
 	}
@@ -267,12 +267,12 @@ class Retriever {
 			
 			function _resolve(text: string, doc: Document) {
 				if (!api.attendance.validate(doc))
-					Function.maybeCall(reject, null, [new Error('validation failed')]);
+					reject.apply(null, [new Error('validation failed')]);
 				
 				__this.lastResponseTime = +new Date();
 				__this.lastAttendanceResponse = doc;
 				__this.lastAttendanceResponseTime = +new Date();
-				Function.maybeCall(resolve, null, [api.attendance.getEvents(doc)]);
+				resolve.apply(null, [api.attendance.getEvents(doc)]);
 			}
 		});
 	}
@@ -291,7 +291,7 @@ class Retriever {
 	assureLoggedIn(): Promise {
 		return new Promise((resolve, reject) => {
 			if (!this.isLoggedIn()) this.login().then(resolve, reject);
-			else Function.maybeCall(resolve, null, []);
+			else resolve.apply(null, []);
 		});
 	}
 	
@@ -301,7 +301,7 @@ class Retriever {
 			__this.assureLoggedIn().then(() => {
 				if (__this.credentials.district.api.cycle.requiresYearLoaded && !__this.isYearLoaded())
 					__this.getYear().then(resolve, reject);
-				else Function.maybeCall(resolve, null, []);
+				else resolve.apply(null, []);
 			}, reject);
 		});
 	}
