@@ -60,14 +60,7 @@ Array.prototype.weightedAverage = function(weights: any[]) : number {
 
 /** Flattens an array of arrays into an array. */
 Array.prototype.flatten = function() : any[] {
-	var newList = [];
-
-	this.forEach((x) => {
-		if (x.length)
-				x.forEach((y) => newList[newList.length] = y);
-	});
-
-	return newList;
+	this.reduce((a,b) => a.concat(b));
 }
 
 /** Returns a list of natural numbers in the form [0, 1, 2, ...] of the given length. */
