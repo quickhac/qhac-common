@@ -107,11 +107,16 @@ class GradeService {
 	
 	constructor() {
 		this.store = new Store('quickhac');
-		this.store.getAccounts().then(
-			(accounts: Account[]) => { this.cache = accounts; },
-			(e: Error) => { throw e; }
-		);
 		this.loginStatus = LoginStatus.NOT_LOGGED_IN;
+	}
+
+	ready() : Promise {
+		return new Promise((resolve: Function, reject: Function) => {
+			this.store.getAccounts().then(
+				(accounts: Account[]) => { this.cache = accounts; resolve(); },
+				(e: Error) => { reject(e); }
+			);
+		});
 	}
 	
 	setIdentity(accountId: string, studentId: string): boolean {

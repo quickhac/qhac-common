@@ -1,8 +1,8 @@
 describe("NumericArrayAdditions", function() {
   it("should correctly determine non-numerics", function() {
-    expect(actuallyIsNaN("12")).toBe(true);
+    expect(actuallyIsNaN("12")).toBe(false);
     expect(actuallyIsNaN({})).toBe(true);
-    expect(actuallyIsNaN(Infinity)).toBe(true);
+    expect(actuallyIsNaN(Infinity)).toBe(false);
     expect(actuallyIsNaN(null)).toBe(true);
     expect(actuallyIsNaN(undefined)).toBe(true);
     expect(actuallyIsNaN(NaN)).toBe(true);
@@ -14,7 +14,7 @@ describe("NumericArrayAdditions", function() {
   it("should sum array elements", function() {
     expect([1,2,3,-1].sum()).toBe(5);
     expect([].sum()).toBeNaN();
-    expect(["1", 1, "2"].sum()).toBe(1);
+    expect(["1", 1, "2"].sum()).toBe(4);
   });
 
   it("should correctly average elements", function() {
@@ -31,7 +31,7 @@ describe("NumericArrayAdditions", function() {
 
   it("should give correct results for upto", function() {
     expect(upto(3)).toEqual([0,1,2]);
-    expect(upto(0)).toEqual([]); // fixme todo: is this desired result?
+    expect(upto(0)).toEqual([]);
   });
 
 });
