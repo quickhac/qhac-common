@@ -110,9 +110,11 @@ class GradeService {
 		this.loginStatus = LoginStatus.NOT_LOGGED_IN;
 	}
 
-	ready() : Promise {
+	ready(): Promise {
 		return new Promise((resolve: Function, reject: Function) => {
-			this.store.getAccounts().then(
+			this.store.init().then(() => {
+				return this.store.getAccounts();
+			}).then(
 				(accounts: Account[]) => { this.cache = accounts; resolve(); },
 				(e: Error) => { reject(e); }
 			);
