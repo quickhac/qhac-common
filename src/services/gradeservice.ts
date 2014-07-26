@@ -188,8 +188,11 @@ class GradeService {
 					this.retriever.getYear().spread((grades: Grades, student: Student) => {
 						student.id = CryptoJS.SHA1(this.newAccount.id + '|0').toString();
 						student.grades = grades;
-						student.studentId = "";
+						student.studentId = ""; // yash asks: what the fuck
 						this.newAccount.students = [student];
+						this.accountId = this.newAccount.id; // yash
+						this.studentId = student.id; // yash
+						this.cache.push(this.newAccount); // yash
 						this.calculator.setStudent(student);
 						this.retriever.setStudent(student);
 						resolve.call(null, [grades, student]);
