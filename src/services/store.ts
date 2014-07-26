@@ -42,7 +42,7 @@ class Store {
 					}, reject).then(() => {
 						return this.storage.setItem('version', 1);
 					}, reject).then(resolve, reject);
-				}
+				} else resolve();
 			}, reject);
 		});
 	}
@@ -50,7 +50,7 @@ class Store {
 	getAccounts(): Promise {
 		return new Promise((resolve: (accounts: Account[]) => any, reject: (e: Error) => any) => {
 			this.storage.getItem('accounts').then((unlinked: UnlinkedAccount[]) => {
-				if (typeof unlinked === 'undefined' || unlinked === null)
+				if (typeof unlinked === 'undefined' || unlinked === null || !unlinked.length)
 					resolve.apply(null, [[]]);
 				else {
 					// link accounts individually

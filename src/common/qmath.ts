@@ -17,7 +17,7 @@ Array.prototype.numerics = function() : any[] {
 Array.prototype.sum = function() : number {
 	var numerics = this.numerics();
 	if (numerics.length === 0) return NaN;
-	return numerics.reduce((x,y) => x + y);
+	return numerics.reduce((x,y) => parseFloat(x) + parseFloat(y));
 }
 
 /** Returns the average of the numeric elements of an array. */
@@ -60,7 +60,7 @@ Array.prototype.weightedAverage = function(weights: any[]) : number {
 
 /** Flattens an array of arrays into an array. */
 Array.prototype.flatten = function() : any[] {
-	this.reduce((a,b) => a.concat(b));
+	return this.reduce((a,b) => a.concat(b));
 }
 
 /** Returns a list of natural numbers in the form [0, 1, 2, ...] of the given length. */
