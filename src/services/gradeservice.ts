@@ -1,9 +1,3 @@
-enum LoginStatus {
-	NOT_LOGGED_IN = 0,
-	LOGGING_IN = 1,
-	LOGGED_IN = 2
-}
-
 /**
  * GradeService is the only object you have to manually keep track of in qhac-common.
  * It is a singleton, since it tracks GradeSpeed login state and assumes no
@@ -150,6 +144,7 @@ class GradeService {
 	
 	// spread: (choices: Student[]) OR (grades: Grades, student: Student)
 	attemptLogin(district: District, username: string, password: string): Promise {
+		// create temporary objects to log in with
 		this.loginStatus = LoginStatus.LOGGING_IN;
 		this.newAccount = {
 			id: CryptoJS.SHA1(district.name + '|' + username + '|' + password).toString(),
@@ -161,75 +156,80 @@ class GradeService {
 			students: []
 		};
 		
+		// temporary instantiate helper modules in order to log in
 		this.calculator = new Calculator(district, null);
 		this.parser = new Parser(district, this.calculator);
 		this.retriever = new Retriever(this.newAccount.credentials, null, this.parser);
 		this.augment = new Augment();
 		
+		// attempt to log in
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.retriever.login().then((choices: Student[]) => {
 				if (choices !== null) {
+					// return choices if user needs to select a student
 					this.newAccount.students = choices;
 					resolve.call(null, [choices]);
 				} else {
-					this.loginStatus = LoginStatus.LOGGED_IN;
-					var student = {
-						id: CryptoJS.SHA1(this.newAccount.id + '|0').toString(),
-						name: '',
-						school: '',
-						studentId: '',
-						gpaData: null,
-						grades: null,
-						attendance: null,
-						preferences: null
-					};
-					this.calculator.setStudent(student);
-					this.retriever.setStudent(student);
-					this.retriever.getYear().spread((grades: Grades, student: Student) => {
-						student.id = CryptoJS.SHA1(this.newAccount.id + '|0').toString();
-						student.grades = grades;
-						student.studentId = ""; // yash asks: what the fuck
-						this.newAccount.students = [student];
-						this.accountId = this.newAccount.id; // yash
-						this.studentId = student.id; // yash
-						this.cache.push(this.newAccount); // yash
-						this.calculator.setStudent(student);
-						this.retriever.setStudent(student);
-						resolve.call(null, [grades, student]);
-					}, reject);
+					// otherwise, confirm the login
+					this.newAccount.students = [];
+					this._confirmLoggedIn('', 0).then(resolve, reject);
 				}
 			}, reject);
 		});
 	}
 	
-	// TODO: verify
 	// spread: (grades: Grades, student: Student)
 	attemptSelectStudent(studentId: string): Promise {
+		var studentIndex = this.newAccount.students.map(s => s.studentId).indexOf(studentId);
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.retriever.selectStudent(studentId).then(() => {
-				this.loginStatus = LoginStatus.LOGGED_IN;
-				var student = {
-					id: CryptoJS.SHA1(this.newAccount.id + '|' + studentId).toString(),
-					name: '',
-					school: '',
-					studentId: studentId,
-					gpaData: null,
-					grades: null,
-					attendance: null,
-					preferences: null
-				};
+				return this._confirmLoggedIn(studentId, studentIndex);
+			}, reject).then(resolve, reject);
+		});
+	}
+
+	// spread: (grades: Grades, student: Student)
+	_confirmLoggedIn(studentId, studentIndex): Promise {
+		return new Promise((resolve: Function, reject: (e: Error) => any) => {
+			var theGrades, theStudent;
+
+			// update state
+			this.loginStatus = LoginStatus.LOGGED_IN;
+			var student = {
+				id: CryptoJS.SHA1(this.newAccount.id + '|0').toString(),
+				name: '',
+				school: '',
+				studentId: '',
+				gpaData: null,
+				grades: null,
+				attendance: null,
+				preferences: null
+			};
+			this.calculator.setStudent(student);
+			this.retriever.setStudent(student);
+
+			// retrieve grades from server
+			this.retriever.getYear().spread((grades: Grades, student: Student) => {
+				student.id = CryptoJS.SHA1(this.newAccount.id + '|' + studentId).toString();
+				student.grades = grades;
+				student.studentId = studentId;
+				this.newAccount.students[studentIndex] = student;
+				this.accountId = this.newAccount.id;
+				this.cache.push(this.newAccount);
+
+
 				this.calculator.setStudent(student);
 				this.retriever.setStudent(student);
-				this.retriever.getYear().spread((grades: Grades, student: Student) => {
-					student.id = CryptoJS.SHA1(this.newAccount.id + '|' + studentId).toString();
-					student.grades = grades;
-					student.studentId = studentId;
-					var studentIndex = this.newAccount.students.map(s => s.studentId).indexOf(studentId);
-					this.newAccount.students[studentIndex] = student;
-					this.accountId = this.newAccount.id;
-					this.cache.push(this.newAccount);
-					resolve.call(null, [grades, student]);
-				});
+
+				theGrades = grades;
+				theStudent = student;
+
+				// save account and student information to storage
+				return this.store.addAccount(this.newAccount);
+			}, reject).then(() => {
+				return this.store.addStudent(theStudent);
+			}, reject).then(() => {
+				resolve.call(null, [theGrades, theStudent]);
 			}, reject);
 		});
 	}

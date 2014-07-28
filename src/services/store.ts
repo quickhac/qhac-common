@@ -11,10 +11,6 @@ interface LocalForage {
 
 declare var localforage: LocalForage;
 
-interface State {
-	activeStudent: string;
-}
-
 class Store {
 	namespace: string;
 	storage: LocalForage;
@@ -37,10 +33,16 @@ class Store {
 			}, reject).then((version: string) => {
 				if (typeof version === 'undefined' || version === null) {
 					// initialise version 1
-					this.storage.setItem('state', { activeStudent: null }).then(() => {
+					this.storage.setItem('state', {
+							activeStudent: null,
+							activeAccount: null,
+							lastUpdated: NaN,
+							loginStatus: LoginStatus.NOT_LOGGED_IN }).then(() => {
 						return this.storage.setItem('preferences', DEFAULT_PREFERENCES);
 					}, reject).then(() => {
 						return this.storage.setItem('version', 1);
+					}, reject).then(() => {
+						return this.storage.setItem('accounts', []);
 					}, reject).then(resolve, reject);
 				} else resolve();
 			}, reject);
@@ -49,17 +51,17 @@ class Store {
 	
 	getAccounts(): Promise {
 		return new Promise((resolve: (accounts: Account[]) => any, reject: (e: Error) => any) => {
-			this.storage.getItem('accounts').then((unlinked: UnlinkedAccount[]) => {
-				if (typeof unlinked === 'undefined' || unlinked === null || !unlinked.length)
+			this.storage.getItem('accounts').then((idList: string[]) => {
+				if (typeof idList === 'undefined' || idList === null || !idList.length)
 					resolve.apply(null, [[]]);
 				else {
 					// link accounts individually
-					var len = unlinked.length,
+					var len = idList.length,
 						accounts: Account[] = new Array(len),
 						loaded = 0;
-					unlinked.forEach((acc: UnlinkedAccount, idx: number) => {
-						this.linkAccount(acc).then((account: Account) => {
-							accounts[idx] = account;
+					idList.forEach((id: string, idx: number) => {
+						this.getAccount(id).then((acc: Account) => {
+							accounts[idx] = acc;
 							if (++loaded === len) resolve.apply(null, [accounts]);
 						}, reject);
 					});
@@ -129,7 +131,15 @@ class Store {
 			this.doesAccountExist(account.id).then((exists: boolean) => {
 				if (exists)
 					reject.apply(null, [new Error('account with that id already exists')]);
-				else this.storage.setItem('account-' + account.id, unlinked).then(resolve, reject);
+				else
+					// save the account
+					this.storage.setItem('account-' + account.id, unlinked).then(() => {
+						// update account list
+						return this.storage.getItem('accounts');
+					}, reject).then((accounts: string[]) => {
+						accounts.push(account.id);
+						return this.storage.setItem('accounts', accounts);
+					}).then(resolve, reject);
 			}, reject);
 		});
 	}
@@ -142,6 +152,20 @@ class Store {
 					reject.apply(null, [new Error('account with that id does not exist')]);
 				else this.storage.setItem('account-' + account.id, unlinked).then(resolve, reject);
 			}, reject);
+		});
+	}
+
+	// only call after removing all students belonging to the account
+	removeAccount(accountId: string): Promise {
+		// remove account data
+		return new Promise((resolve: Function, reject: (e: Error) => any) => {
+			this.storage.removeItem('account-' + accountId).then(() => {
+				return this.storage.getItem('accounts');
+			}, reject).then((accounts: string[]) => {
+				// remove account from account list
+				accounts.splice(accounts.indexOf(accountId), 1);
+				return this.storage.setItem('accounts', accounts);
+			}, reject).then(resolve, reject);
 		});
 	}
 	
@@ -158,17 +182,12 @@ class Store {
 		return this.storage.getItem('student-' + id);
 	}
 	
-	addStudent(accountId: string, student: Student): Promise {
+	addStudent(student: Student): Promise {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.doesStudentExist(student.id).then((exists: boolean) => {
 				if (exists)
 					reject.apply(null, [new Error('student with that id already exists')]);
-				else this.storage.setItem('student-' + student.id, student).then(() => {
-					this.storage.getItem('account-' + accountId).then((account: UnlinkedAccount) => {
-						account.students.push(this.unlinkStudent(student));
-						return this.storage.setItem('account-' + accountId, account);
-					}, reject).then(resolve, reject);
-				}, reject);
+				else this.storage.setItem('student-' + student.id, student).then(resolve, reject);
 			}, reject);
 		});
 	}
@@ -203,21 +222,55 @@ class Store {
 	}
 	
 	getActiveStudent(): Promise {
-		return new Promise((resolve: (student: Student) => any, reject: (e: Error) => any) => {
-			this.storage.getItem('state').then((state: State) => {
-				if (typeof state.activeStudent == 'undefined' || state.activeStudent == null)
-					resolve.apply(null, [null]);
-				else this.storage.getItem('student-' + state.activeStudent).then(resolve, reject);
-			}, reject);
+		return this._getStateProperty('activeStudent').then((student: string) => {
+			return this.storage.getItem('student-' + student);
 		});
 	}
 	
 	setActiveStudent(id: string): Promise {
+		return this._setStateProperty('activeStudent', id);
+	}
+
+	getActiveAccount(): Promise {
+		return this._getStateProperty('activeAccount').then((account: string) => {
+			return this.getAccount(account);
+		});
+	}
+
+	setActiveAccount(id: string): Promise {
+		return this._setStateProperty('activeAccount', id);
+	}
+
+	getLastUpdatedTime(): Promise {
+		return this._getStateProperty('lastUpdated');
+	}
+
+	setLastUpdatedTime(time: string): Promise {
+		return this._setStateProperty('lastUpdated', time);
+	}
+
+	getLoginStatus(): Promise {
+		return this._getStateProperty('loginStatus');
+	}
+
+	setLoginStatus(status: LoginStatus): Promise {
+		return this._setStateProperty('loginStatus', status);
+	}
+
+	_getStateProperty(prop: string): Promise {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.storage.getItem('state').then((state: State) => {
-				state.activeStudent = id;
-				this.storage.setItem('state', state).then(resolve, reject);
-			});
+				if (typeof state[prop] === 'undefined' || state[prop] === null)
+					resolve.apply(null, [null]);
+				else resolve(state[prop]);
+			}, reject);
+		});
+	}
+
+	_setStateProperty(prop: string, val: any): Promise {
+		return this.storage.getItem('state').then((state: State) => {
+			state[prop] = val;
+			return this.storage.setItem('state', state);
 		});
 	}
 	

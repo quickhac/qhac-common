@@ -51,7 +51,7 @@ module Districts {
 						var name = i.find('.sg-picker-student-name')[0].innerText;
 						var studentId = (<HTMLInputElement> i.find('input[name=studentId]')[0]).value;
 						return {
-							id: CryptoJS.SHA1(name + '|' + studentId),
+							id: CryptoJS.SHA1(name + '|' + studentId).toString(),
 							name: name,
 							studentId: studentId
 						}
@@ -181,7 +181,7 @@ module Districts {
 						var name = o.innerText;
 						var studentId = o.attr('value');
 						return {
-							id: CryptoJS.SHA1(name + '|' + studentId),
+							id: CryptoJS.SHA1(name + '|' + studentId).toString(),
 							name: name,
 							studentId: studentId
 						}

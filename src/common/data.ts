@@ -188,6 +188,19 @@ interface District {
 			makeQuery: (doc: Document) => Object;
 			getEvents: (doc: Document) => AttendanceEvent[]; }
 
+enum LoginStatus {
+	NOT_LOGGED_IN = 0,
+	LOGGING_IN = 1,
+	LOGGED_IN = 2
+}
+
+interface State {
+	activeStudent: string;
+	activeAccount: string;
+	lastUpdated: number;
+	loginStatus: LoginStatus;
+}
+
 // CryptoJS methods
 declare var CryptoJS : Crypto;
 
