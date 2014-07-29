@@ -20,4 +20,10 @@ var DEFAULT_PREFERENCES: Preferences = {
 	passwordOn: false,
 	passwordHash: '',
 	gpaPrecision: 4
-}
+};
+
+var DEFAULT_STUDENT_PREFERENCES: StudentPrefs = {
+	notifLevel: NotificationLevel.CYCLE_CHANGE,
+	gpaWeightedOn: true,
+	gpaUnweightedOn: true
+};

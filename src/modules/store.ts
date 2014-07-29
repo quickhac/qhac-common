@@ -222,42 +222,42 @@ class Store {
 	}
 	
 	getActiveStudent(): Promise {
-		return this._getStateProperty('activeStudent').then((student: string) => {
+		return this.getStateProperty('activeStudent').then((student: string) => {
 			return this.storage.getItem('student-' + student);
 		});
 	}
 	
 	setActiveStudent(id: string): Promise {
-		return this._setStateProperty('activeStudent', id);
+		return this.setStateProperty('activeStudent', id);
 	}
 
 	getActiveAccount(): Promise {
-		return this._getStateProperty('activeAccount').then((account: string) => {
+		return this.getStateProperty('activeAccount').then((account: string) => {
 			return this.getAccount(account);
 		});
 	}
 
 	setActiveAccount(id: string): Promise {
-		return this._setStateProperty('activeAccount', id);
+		return this.setStateProperty('activeAccount', id);
 	}
 
 	getLastUpdatedTime(): Promise {
-		return this._getStateProperty('lastUpdated');
+		return this.getStateProperty('lastUpdated');
 	}
 
 	setLastUpdatedTime(time: string): Promise {
-		return this._setStateProperty('lastUpdated', time);
+		return this.setStateProperty('lastUpdated', time);
 	}
 
 	getLoginStatus(): Promise {
-		return this._getStateProperty('loginStatus');
+		return this.getStateProperty('loginStatus');
 	}
 
 	setLoginStatus(status: LoginStatus): Promise {
-		return this._setStateProperty('loginStatus', status);
+		return this.setStateProperty('loginStatus', status);
 	}
 
-	_getStateProperty(prop: string): Promise {
+	getStateProperty(prop: string): Promise {
 		return new Promise((resolve: Function, reject: (e: Error) => any) => {
 			this.storage.getItem('state').then((state: State) => {
 				if (typeof state[prop] === 'undefined' || state[prop] === null)
@@ -267,7 +267,7 @@ class Store {
 		});
 	}
 
-	_setStateProperty(prop: string, val: any): Promise {
+	setStateProperty(prop: string, val: any): Promise {
 		return this.storage.getItem('state').then((state: State) => {
 			state[prop] = val;
 			return this.storage.setItem('state', state);

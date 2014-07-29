@@ -208,15 +208,25 @@ class GradeService {
 			this.calculator.setStudent(student);
 			this.retriever.setStudent(student);
 
-			// retrieve grades from server
+			// retrieve information from server
 			this.retriever.getYear().spread((grades: Grades, student: Student) => {
 				student.id = CryptoJS.SHA1(this.newAccount.id + '|' + studentId).toString();
 				student.grades = grades;
 				student.studentId = studentId;
+				student.gpaData = {
+					prevGpa: null,
+					numPrevSemesters: null,
+					weightedCourses: [],
+					electiveCourses: [],
+					extraCreditWhitelist: [],
+					extraCreditBlacklist: []
+				};
+				student.preferences = DEFAULT_STUDENT_PREFERENCES;
+				student.grades.changedGrades = [];
 				this.newAccount.students[studentIndex] = student;
+				this.studentId = student.id;
 				this.accountId = this.newAccount.id;
 				this.cache.push(this.newAccount);
-
 
 				this.calculator.setStudent(student);
 				this.retriever.setStudent(student);
@@ -224,6 +234,12 @@ class GradeService {
 				theGrades = grades;
 				theStudent = student;
 
+				return this.retriever.getAttendance();
+			}, reject).then((events: AttendanceEvent[]) => {
+				theStudent.attendance = {
+					lastUpdated: +new Date,
+					events: events
+				};
 				// save account and student information to storage
 				return this.store.addAccount(this.newAccount);
 			}, reject).then(() => {
