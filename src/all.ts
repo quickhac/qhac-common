@@ -10,6 +10,8 @@
 /// <reference path='common/xhr.ts'/>
 
 /// <reference path='districts/all.ts'/>
+/// <reference path='districts/austin.ts'/>
+/// <reference path='districts/roundrock.ts'/>
 
 /// <reference path='modules/augment.ts'/>
 /// <reference path='modules/calc.ts'/>
