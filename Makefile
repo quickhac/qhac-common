@@ -7,7 +7,7 @@ doc:
 	typedoc --out doc/ src/
 
 prepare:
-	mkdirs build
+	mkdir build
 
 clean:
 	rm build/*
