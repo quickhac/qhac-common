@@ -10,6 +10,11 @@ module Log {
 			args.forEach(msg => console.log(msg));
 	}
 
+	export function ddir(..args: any[]) : void {
+		if (LogLevel.DEBUG >= level)
+			args.forEach(msg => console.dir(msg));
+	}
+
 	export function i(...args: any[]) : void {
 		if (LogLevel.INFO >= level)
 			args.forEach(msg => console.log(msg));
@@ -23,6 +28,11 @@ module Log {
 	export function err(...args: any[]) : void {
 		if (LogLevel.ERROR >= level)
 			args.forEach(msg => console.log(msg));
+	}
+
+	export function errdir(..args: any[]) : void {
+		if (LogLevel.ERROR >= level)
+			args.forEach(msg => console.dir(msg));
 	}
 }
 
